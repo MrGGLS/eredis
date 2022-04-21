@@ -30,3 +30,27 @@
 *.exe
 *.out
 *.app
+
+######################
+# OS generated files #
+######################
+.DS_Store
+
+# CLion info
+.idea/
+target/
+cmake-build-debug/
+cmake-build-release/
+.cache/
+
+# VS Code info
+.vscode/
+
+# Xmake cache
+.xmake/
+build/
+
+# gtest
+# version: 1.11.0
+gtest/
+
