@@ -44,6 +44,7 @@
 ## 在windows中部署开发环境
 + 下载 [LLVM](https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.0/LLVM-14.0.0-win64.exe) 
 + 安装LLVM的时候勾选加入环境变量（方便clion自动检测）
++ 下载安装[XMAKE](https://github.com/xmake-io/xmake/releases/download/v2.6.4/xmake-v2.6.4.win64.exe)
 + 安装[chocolatey](https://docs.chocolatey.org/en-us/choco/setup)（若有请忽略）
 + 进入powershell执行命令`choco install make`（普通命令行权限不够）
 + 在clion中修改make路径
