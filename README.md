@@ -40,3 +40,16 @@
 #### 编译器
 
 本项目使用 clang 编译器，目前的版本为最新版本 13.0.1，请不要使用 MSVC（VS 集成环境），可能会导致编译错误。
+
+## 在windows中部署开发环境
++ 下载 [LLVM](https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.0/LLVM-14.0.0-win64.exe) 
++ 安装LLVM的时候勾选加入环境变量（方便clion自动检测）
++ 安装[chocolatey](https://docs.chocolatey.org/en-us/choco/setup)（若有请忽略）
++ 进入powershell执行命令`choco install make`（普通命令行权限不够）
++ 在clion中修改make路径
++ ![make.png](images/make.png)
++ 在clion中安装xmake插件（如果有，我反正没有不知道为什么）
++ 配置toolchains，在toolchain中新建system，会自动检测到clang compiler
++ ![toolchains.png](images/toolchains.png)
++ 测试配置
++ ![testmake.png](images/testmake.png)
