@@ -2,6 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 target("easy-redis")
     set_kind("binary")
+    set_languages("c++20")
     add_files("src/*.cpp")
 
 --
