@@ -4,7 +4,7 @@
 
 ### 配置
 
-- `config set xxx`
+<!-- - `config set xxx` -->
 
 ### Key 操作
 
@@ -30,3 +30,10 @@
 #### List
 #### Set
 #### Hash
+
+### 数据保存
+
+1. `save`: 保存数据
+
+
+
