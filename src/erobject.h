@@ -2,6 +2,7 @@
 #define __EROBJECT_H__
 
 #include <string>
+#include <variant>
 #include <vector>
 
 enum class ObjectType {
@@ -10,6 +11,18 @@ enum class ObjectType {
     ER_List,
 };
 
+struct Unknown {
+};
+
+struct ERString {
+    std::string str;
+};
+
+struct ERList {
+    // TODO: head pointer of list
+    std::vector<std::string> list;
+};
+// ... 其他类型
 /**
  * ERObject: 通用枚举类的实现
  *
@@ -23,26 +36,7 @@ enum class ObjectType {
 class ERObject {
 private:
     ObjectType type;
-
-    union Value {
-        constexpr Value()
-            : unknown {}
-        {
-        }
-        ~Value() {}
-
-        struct {
-        } unknown;
-
-        struct ERSTRING {
-            std::string str;
-        } erstring;
-
-        struct ERList {
-            std::vector<std::string> list;
-        } erlist;
-        // ... 其他类型
-    } value;
+    std::variant<Unknown, ERString, ERList> value;
 
 public:
     explicit ERObject(ObjectType type, void *value);
