@@ -9,7 +9,6 @@ private:
     /* DBOPS dbops; */
 public:
     int run(std::string input);
-
 };
 
 #endif // __CONTROLLER_H__

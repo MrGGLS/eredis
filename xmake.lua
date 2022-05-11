@@ -4,7 +4,6 @@ target("easy-redis")
     set_kind("binary")
     set_languages("c++20")
     add_files("src/*.cpp")
-    set_toolchains("mingw")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
