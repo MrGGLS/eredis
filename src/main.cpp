@@ -1,15 +1,28 @@
 #include "controller.h"
 #include "eredis.hpp"
 #include <iostream>
+#include <winsock.h>
+#include "controller.h"
+#pragma comment(lib, "ws2_32.lib")
+void initialization();
 
 void test();
 int main(int argc, char **argv)
 {
     test();
+    //定义长度变量
+    int send_len = 0;
+    int recv_len = 0;
+    int len = 0;
+    //定义发送缓冲区和接受缓冲区
+
+    char output[100];
+    char input[100];
+
     //解释器测试
-    //    std::string input("set 12 13");
-    //    Controller ctrl;
-    //    ctrl.run(input);
+    /* std::cin.getline(input, 100); */
+    /* Controller ctrl; */
+    /* std::cout<<ctrl.run(input); */
 
     //    while (true) {
     //        /* 处理输入 */
@@ -23,8 +36,82 @@ int main(int argc, char **argv)
     //        /* 响应 */
     //        // cout << /* 一些输出 */;
     //    }
+    //定义服务端套接字，接受请求套接字
+    SOCKET s_server;
+    SOCKET s_accept;
+    //服务端地址客户端地址
+    SOCKADDR_IN server_addr;
+    SOCKADDR_IN accept_addr;
+    initialization();
+    //填充服务端信息
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
+    server_addr.sin_port = htons(5010);
+    //创建套接字
+    s_server = socket(AF_INET, SOCK_STREAM, 0);
+    if (bind(s_server, (SOCKADDR *)&server_addr, sizeof(SOCKADDR)) == SOCKET_ERROR) {
+        std::cout << "error" << std::endl;
+        WSACleanup();
+    }
+    //设置套接字为监听状态
+    if (listen(s_server, SOMAXCONN) < 0) {
+        std::cout << "error" << std::endl;
+        WSACleanup();
+    }
+    std::cout << "wait..." << std::endl;
+    //接受连接请求
+    len = sizeof(SOCKADDR);
+    s_accept = accept(s_server, (SOCKADDR *)&accept_addr, &len);
+    if (s_accept == SOCKET_ERROR) {
+        std::cout << "error" << std::endl;
+        WSACleanup();
+        return 0;
+    }
+
+    //接收数据
+    while (1) {
+        recv_len = recv(s_accept, input, 100, 0);
+        if (recv_len < 0) {
+
+            break;
+        }
+
+
+
+        std::cin >> output;
+
+        send_len = send(s_accept, output, 100, 0);
+        if (send_len < 0) {
+
+            break;
+        }
+    }
+    //关闭套接字
+    closesocket(s_server);
+    closesocket(s_accept);
+    //释放DLL资源
+    WSACleanup();
     return 0;
 }
+
+void initialization()
+{
+    //初始化套接字库
+    WORD w_req = MAKEWORD(2, 2); //版本号
+    WSADATA wsadata;
+    int err;
+    err = WSAStartup(w_req, &wsadata);
+    if (err != 0) {
+        std::cout << "初始化套接字库失败！" << std::endl;
+    }
+    //检测版本号
+    if (LOBYTE(wsadata.wVersion) != 2 || HIBYTE(wsadata.wHighVersion) != 2) {
+        std::cout << "套接字库版本号不符！" << std::endl;
+        WSACleanup();
+    }
+    //填充服务端地址信息
+}
+
 
 void test()
 {
