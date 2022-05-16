@@ -4,93 +4,96 @@
 #include "parser.h"
 
 //操作对象的返回函数
-std::unique_ptr<op_result> parser::key_op() {
+std::unique_ptr<op_result> parser::key_op()
+{
     std::unique_ptr<key_result> res = std::make_unique<key_result>(Parser_Token::key_list_op, "");
     if (split_result.size() == 2) {
-        if (split_result[1]=="*"){
+        if (split_result[1] == "*") {
             return res;
         }
-
     }
     res.get()->setOptype(Parser_Token::arguments_error);
     return res;
-
 }
-std::unique_ptr<op_result> parser::exist_key_op() {
-    std::unique_ptr<exist_key_result> res=std::make_unique<exist_key_result>(Parser_Token::exists_key_op, "", "");
-    if (split_result.size()==2){
+std::unique_ptr<op_result> parser::exist_key_op()
+{
+    std::unique_ptr<exist_key_result> res = std::make_unique<exist_key_result>(Parser_Token::exists_key_op, "", "");
+    if (split_result.size() == 2) {
         res.get()->setKeyN(split_result[1]);
         return res;
-    }else{
+    } else {
         res.get()->setOptype(Parser_Token::arguments_error);
         return res;
     }
-
 }
 
-std::unique_ptr<op_result> parser::type_key_op() {
-    std::unique_ptr<type_key_result> res= std::make_unique<type_key_result>(Parser_Token::type_key_op, "", "");
-    if (split_result.size()==2){
+std::unique_ptr<op_result> parser::type_key_op()
+{
+    std::unique_ptr<type_key_result> res = std::make_unique<type_key_result>(Parser_Token::type_key_op, "", "");
+    if (split_result.size() == 2) {
         res.get()->setKeyN(split_result[1]);
         return res;
-    } else{
+    } else {
         res.get()->setOptype(Parser_Token::arguments_error);
         return res;
     }
-
 }
 
-std::unique_ptr<op_result> parser::del_key_op() {
-    std::unique_ptr<del_key_result>res = std::make_unique<del_key_result>(Parser_Token::del_key_op, "", "");
-    if (split_result.size()==2){
+std::unique_ptr<op_result> parser::del_key_op()
+{
+    std::unique_ptr<del_key_result> res = std::make_unique<del_key_result>(Parser_Token::del_key_op, "", "");
+    if (split_result.size() == 2) {
         res.get()->setKeyN(split_result[1]);
         return res;
-    } else{
+    } else {
         res.get()->setOptype(Parser_Token::arguments_error);
         return res;
     }
 }
 
-std::unique_ptr<op_result> parser::dbsize_op() {
-    std::unique_ptr<dbsize_result>res = std::make_unique<dbsize_result>(Parser_Token::dbsize_op, "");
-    if (split_result.size()==1){
+std::unique_ptr<op_result> parser::dbsize_op()
+{
+    std::unique_ptr<dbsize_result> res = std::make_unique<dbsize_result>(Parser_Token::dbsize_op, "");
+    if (split_result.size() == 1) {
         return res;
-    }else{
+    } else {
         res.get()->setOptype(Parser_Token::arguments_error);
         return res;
     }
 }
 
-std::unique_ptr<op_result> parser::flushdb_op() {
-    std::unique_ptr<flushdb_result>res= std::make_unique<flushdb_result>(Parser_Token::flushdb_op, "");
-    if (split_result.size()==1){
+std::unique_ptr<op_result> parser::flushdb_op()
+{
+    std::unique_ptr<flushdb_result> res = std::make_unique<flushdb_result>(Parser_Token::flushdb_op, "");
+    if (split_result.size() == 1) {
         return res;
-    }else{
-        res.get()->setOptype(Parser_Token::arguments_error);
-        return res;
-    }
-
-}
-
-std::unique_ptr<op_result> parser::flushall_op() {
-    std::unique_ptr<flushall_result>res = std::make_unique<flushall_result>(Parser_Token::flushall_op, "");
-    if (split_result.size()==1){
-        return res;
-    }else{
+    } else {
         res.get()->setOptype(Parser_Token::arguments_error);
         return res;
     }
 }
 
-std::unique_ptr<op_result> parser::select_db_op() {
-    std::unique_ptr<select_db_result>res= std::make_unique<select_db_result>(Parser_Token::select_n_op, "", 0);
+std::unique_ptr<op_result> parser::flushall_op()
+{
+    std::unique_ptr<flushall_result> res = std::make_unique<flushall_result>(Parser_Token::flushall_op, "");
+    if (split_result.size() == 1) {
+        return res;
+    } else {
+        res.get()->setOptype(Parser_Token::arguments_error);
+        return res;
+    }
+}
 
-    if (split_result.size()==2){
-        if (string_to_int(split_result[1])){
-            int N= std::stoi(split_result[1]);
+std::unique_ptr<op_result> parser::select_db_op()
+{
+    std::unique_ptr<select_db_result> res = std::make_unique<select_db_result>(Parser_Token::select_n_op, "", 0);
+
+    if (split_result.size() == 2) {
+        if (string_to_int(split_result[1])) {
+            int N = std::stoi(split_result[1]);
             res.get()->setDbN(N);
             return res;
-        } else{
+        } else {
             res.get()->setOptype(Parser_Token::no_vaild_error);
             return res;
         }
@@ -104,60 +107,64 @@ std::unique_ptr<op_result> parser::select_db_op() {
         //            return res;
         //        }
 
-    }else{
+    } else {
         res.get()->setOptype(Parser_Token::arguments_error);
         return res;
     }
 }
 
-std::unique_ptr<op_result> parser::get_key_op() {
-    std::unique_ptr<get_key_result>res= std::make_unique<get_key_result>(Parser_Token::get_key_op, "", "");
-    if (split_result.size()==2){
+std::unique_ptr<op_result> parser::get_key_op()
+{
+    std::unique_ptr<get_key_result> res = std::make_unique<get_key_result>(Parser_Token::get_key_op, "", "");
+    if (split_result.size() == 2) {
         res.get()->setKey(split_result[1]);
         return res;
-    }else{
+    } else {
         res.get()->setOptype(arguments_error);
         return res;
     }
 }
 
-std::unique_ptr<op_result> parser::strlen_op() {
-    std::unique_ptr<strlen_result>res= std::make_unique<strlen_result>(Parser_Token::strlen_key, "", "");
-    if (split_result.size()==2){
+std::unique_ptr<op_result> parser::strlen_op()
+{
+    std::unique_ptr<strlen_result> res = std::make_unique<strlen_result>(Parser_Token::strlen_key, "", "");
+    if (split_result.size() == 2) {
         res.get()->setKey(split_result[1]);
         return res;
-    } else{
+    } else {
         res.get()->setOptype(arguments_error);
         return res;
     }
 }
 
-std::unique_ptr<op_result> parser::append_key_value_op() {
-    std::unique_ptr<append_key_value_result>res= std::make_unique<append_key_value_result>(Parser_Token::append_key_value_op,
+std::unique_ptr<op_result> parser::append_key_value_op()
+{
+    std::unique_ptr<append_key_value_result> res = std::make_unique<append_key_value_result>(Parser_Token::append_key_value_op,
         "", "", "");
-    if (3==split_result.size()){
+    if (3 == split_result.size()) {
         res.get()->setKey(split_result[1]);
         res.get()->setValue(split_result[2]);
         return res;
-    } else{
+    } else {
         res.get()->setOptype(Parser_Token::arguments_error);
         return res;
     }
 }
 
-std::unique_ptr<op_result> parser::getstrange_op() {
-    std::unique_ptr<getrange_result>res= std::make_unique<getrange_result>(Parser_Token::getrange_key_start_end, "",
-        "",0,0);
-    if (4==split_result.size()){
-        if (string_to_int(split_result[2])&& string_to_int(split_result[3])){
+std::unique_ptr<op_result> parser::getstrange_op()
+{
+    std::unique_ptr<getrange_result> res = std::make_unique<getrange_result>(Parser_Token::getrange_key_start_end, "",
+        "", 0, 0);
+    if (4 == split_result.size()) {
+        if (string_to_int(split_result[2]) && string_to_int(split_result[3])) {
             res.get()->setStart(std::stoi(split_result[2]));
             res.get()->setAnEnd(std::stoi(split_result[3]));
             return res;
-        } else{
+        } else {
             res.get()->setOptype(Parser_Token::no_vaild_error);
             return res;
         }
-    } else{
+    } else {
         res.get()->setOptype(Parser_Token::arguments_error);
         return res;
     }
@@ -176,294 +183,359 @@ std::unique_ptr<op_result> parser::getstrange_op() {
     //        res.get()->setOptype(Parser_Token::arguments_error);
     //        return res;
     //    }
-
 }
 
-//op_result类的函数
-op_result::op_result(int optype, const std::string &result) : optype(optype), result(result) {}
+// op_result类的函数
+op_result::op_result(int optype, const std::string &result)
+    : optype(optype)
+    , result(result)
+{
+}
 
-int op_result::getOptype() const {
+int op_result::getOptype() const
+{
     return optype;
 }
 
-const std::string &op_result::getResult() const {
+const std::string &op_result::getResult() const
+{
     return result;
 }
 
-void op_result::setOptype(int optype) {
+void op_result::setOptype(int optype)
+{
     op_result::optype = optype;
 }
 
-void op_result::setResult(const std::string &result) {
+void op_result::setResult(const std::string &result)
+{
     op_result::result = result;
 }
 
-
 //
-key_result::key_result(int optype, const std::string &result) : op_result(optype, result) {}
+key_result::key_result(int optype, const std::string &result)
+    : op_result(optype, result)
+{
+}
 //
-exist_key_result::exist_key_result(int optype, const std::string &result, const std::string &keyN) : op_result(optype,
-        result),
-    key_n(keyN) {}
+exist_key_result::exist_key_result(int optype, const std::string &result, const std::string &keyN)
+    : op_result(optype,
+        result)
+    , key_n(keyN)
+{
+}
 
-const std::string &exist_key_result::getKeyN() const {
+const std::string &exist_key_result::getKeyN() const
+{
     return key_n;
 }
 
-void exist_key_result::setKeyN(const std::string &keyN) {
+void exist_key_result::setKeyN(const std::string &keyN)
+{
     key_n = keyN;
 }
 
+type_key_result::type_key_result(int optype, const std::string &result, const std::string &keyN)
+    : op_result(optype,
+        result)
+    , key_n(keyN)
+{
+}
 
-type_key_result::type_key_result(int optype, const std::string &result, const std::string &keyN) : op_result(optype,
-        result),
-    key_n(keyN) {}
-
-const std::string &type_key_result::getKeyN() const {
+const std::string &type_key_result::getKeyN() const
+{
     return key_n;
 }
 
-void type_key_result::setKeyN(const std::string &keyN) {
+void type_key_result::setKeyN(const std::string &keyN)
+{
     key_n = keyN;
 }
 
+del_key_result::del_key_result(int optype, const std::string &result, const std::string &keyN)
+    : op_result(optype,
+        result)
+    , key_n(keyN)
+{
+}
 
-del_key_result::del_key_result(int optype, const std::string &result, const std::string &keyN) : op_result(optype,
-        result),
-    key_n(keyN) {}
-
-const std::string &del_key_result::getKeyN() const {
+const std::string &del_key_result::getKeyN() const
+{
     return key_n;
 }
 
-void del_key_result::setKeyN(const std::string &keyN) {
+void del_key_result::setKeyN(const std::string &keyN)
+{
     key_n = keyN;
 }
 
+dbsize_result::dbsize_result(int optype, const std::string &result)
+    : op_result(optype, result)
+{
+}
 
-dbsize_result::dbsize_result(int optype, const std::string &result) : op_result(optype, result) {}
+flushdb_result::flushdb_result(int optype, const std::string &result)
+    : op_result(optype, result)
+{
+}
 
-flushdb_result::flushdb_result(int optype, const std::string &result) : op_result(optype, result) {}
+flushall_result::flushall_result(int optype, const std::string &result)
+    : op_result(optype, result)
+{
+}
 
-flushall_result::flushall_result(int optype, const std::string &result) : op_result(optype, result) {}
+select_db_result::select_db_result(int optype, const std::string &result, const int &dbN)
+    : op_result(optype,
+        result)
+    , db_n(dbN)
+{
+}
 
-select_db_result::select_db_result(int optype, const std::string &result, const int &dbN) : op_result(optype,
-        result),
-    db_n(dbN) {}
-
-const int &select_db_result::getDbN() const {
+const int &select_db_result::getDbN() const
+{
     return db_n;
 }
 
-void select_db_result::setDbN(const int &dbN) {
+void select_db_result::setDbN(const int &dbN)
+{
     db_n = dbN;
 }
 
-
 set_key_value_result::set_key_value_result(int optype, const std::string &result, const std::string &key,
-    const std::string &value) : op_result(optype, result), key(key),
-    value(value) {}
+    const std::string &value)
+    : op_result(optype, result)
+    , key(key)
+    , value(value)
+{
+}
 
-const std::string &set_key_value_result::getKey() const {
+const std::string &set_key_value_result::getKey() const
+{
     return key;
 }
 
-const std::string &set_key_value_result::getValue() const {
+const std::string &set_key_value_result::getValue() const
+{
     return value;
 }
 
-void set_key_value_result::setKey(const std::string &key) {
+void set_key_value_result::setKey(const std::string &key)
+{
     set_key_value_result::key = key;
 }
 
-void set_key_value_result::setValue(const std::string &value) {
+void set_key_value_result::setValue(const std::string &value)
+{
     set_key_value_result::value = value;
 }
 
+get_key_result::get_key_result(int optype, const std::string &result, const std::string &key)
+    : op_result(optype,
+        result)
+    , key(key)
+{
+}
 
-get_key_result::get_key_result(int optype, const std::string &result, const std::string &key) : op_result(optype,
-        result),
-    key(key) {}
-
-const std::string &get_key_result::getKey() const {
+const std::string &get_key_result::getKey() const
+{
     return key;
 }
 
-void get_key_result::setKey(const std::string &key) {
+void get_key_result::setKey(const std::string &key)
+{
     get_key_result::key = key;
 }
 
+strlen_result::strlen_result(int optype, const std::string &result, const std::string &key)
+    : op_result(optype, result)
+    , key(key)
+{
+}
 
-strlen_result::strlen_result(int optype, const std::string &result, const std::string &key) : op_result(optype, result),
-    key(key) {}
-
-const std::string &strlen_result::getKey() const {
+const std::string &strlen_result::getKey() const
+{
     return key;
 }
 
-void strlen_result::setKey(const std::string &key) {
+void strlen_result::setKey(const std::string &key)
+{
     strlen_result::key = key;
 }
 
-
 append_key_value_result::append_key_value_result(int optype, const std::string &result, const std::string &key,
-    const std::string &value) : op_result(optype, result), key(key),
-    value(value) {}
+    const std::string &value)
+    : op_result(optype, result)
+    , key(key)
+    , value(value)
+{
+}
 
-const std::string &append_key_value_result::getKey() const {
+const std::string &append_key_value_result::getKey() const
+{
     return key;
 }
 
-const std::string &append_key_value_result::getValue() const {
+const std::string &append_key_value_result::getValue() const
+{
     return value;
 }
 
-void append_key_value_result::setKey(const std::string &key) {
+void append_key_value_result::setKey(const std::string &key)
+{
     append_key_value_result::key = key;
 }
 
-void append_key_value_result::setValue(const std::string &value) {
+void append_key_value_result::setValue(const std::string &value)
+{
     append_key_value_result::value = value;
 }
 
-
 getrange_result::getrange_result(int optype, const std::string &result, const std::string &key, const int32_t &start,
-    const int32_t &anEnd) : op_result(optype, result), key(key), start(start),
-    end(anEnd) {}
+    const int32_t &anEnd)
+    : op_result(optype, result)
+    , key(key)
+    , start(start)
+    , end(anEnd)
+{
+}
 
-const std::string &getrange_result::getKey() const {
+const std::string &getrange_result::getKey() const
+{
     return key;
 }
 
-int32_t getrange_result::getStart() const {
+int32_t getrange_result::getStart() const
+{
     return start;
 }
 
-int32_t getrange_result::getAnEnd() const {
+int32_t getrange_result::getAnEnd() const
+{
     return end;
 }
 
-void getrange_result::setKey(const std::string &key) {
+void getrange_result::setKey(const std::string &key)
+{
     getrange_result::key = key;
 }
 
-void getrange_result::setStart(int32_t start) {
+void getrange_result::setStart(int32_t start)
+{
     getrange_result::start = start;
 }
 
-void getrange_result::setAnEnd(int32_t anEnd) {
+void getrange_result::setAnEnd(int32_t anEnd)
+{
     end = anEnd;
 }
-
 
 /*
  * parser的构造函数，需要解决的问题
  * 1. 将传入的字符串按照” “分割
  * 2. 根据字符串中的双引号判断语法是否正确，双引号用来规定字符串，除此之外出现在任何地方都是语法错误
  * */
-//parser::parser(std::string& input) {
-//    int a = split();
-//    parser_result.get()->setOptype(Parser_Token::syntax_error);
-//    parser_result.get()->setResult(NULL);
-//    this->input = input;
-//}
-//    Parser_Token split_token=split();
-//    switch (split_token) {
-//        case Parser_Token::key_list_op:
-//            key_op();
-//            break;
-//        case Parser_Token::exists_key_op:
-//            exist_key_op();
-//            break;
-//        case Parser_Token::type_key_op:
-//            type_key_op();
-//            break;
-//        case Parser_Token::del_key_op:
-//            del_key_op();
-//            break;
-//        case Parser_Token::dbsize_op:
-//            dbsize_op();
-//            break;
-//        case Parser_Token::flushdb_op:
-//            flushdb_op();
-//            break;
-//        case Parser_Token::flushall_op:
-//            flushall_op();
-//            break;
-//        case Parser_Token::select_n_op:
-//            select_db_op();
-//            break;
-//        case Parser_Token::get_key_op:
-//            get_key_op();
-//            break;
-//        case Parser_Token::set_key_value_op:
-//            set_key_value_op();
-//            break;
-//        case Parser_Token::strlen_key:
-//            strlen_op();
-//            break;
-//        case Parser_Token::append_key_value_op:
-//            append_key_value_op();
-//            break;
-//        case Parser_Token::getrange_key_start_end:
-//            getstrange_op();
-//            break;
-//        default:
-//            syntax_error();
-//            break;
-//    }
+// parser::parser(std::string& input) {
+//     int a = split();
+//     parser_result.get()->setOptype(Parser_Token::syntax_error);
+//     parser_result.get()->setResult(NULL);
+//     this->input = input;
+// }
+//     Parser_Token split_token=split();
+//     switch (split_token) {
+//         case Parser_Token::key_list_op:
+//             key_op();
+//             break;
+//         case Parser_Token::exists_key_op:
+//             exist_key_op();
+//             break;
+//         case Parser_Token::type_key_op:
+//             type_key_op();
+//             break;
+//         case Parser_Token::del_key_op:
+//             del_key_op();
+//             break;
+//         case Parser_Token::dbsize_op:
+//             dbsize_op();
+//             break;
+//         case Parser_Token::flushdb_op:
+//             flushdb_op();
+//             break;
+//         case Parser_Token::flushall_op:
+//             flushall_op();
+//             break;
+//         case Parser_Token::select_n_op:
+//             select_db_op();
+//             break;
+//         case Parser_Token::get_key_op:
+//             get_key_op();
+//             break;
+//         case Parser_Token::set_key_value_op:
+//             set_key_value_op();
+//             break;
+//         case Parser_Token::strlen_key:
+//             strlen_op();
+//             break;
+//         case Parser_Token::append_key_value_op:
+//             append_key_value_op();
+//             break;
+//         case Parser_Token::getrange_key_start_end:
+//             getstrange_op();
+//             break;
+//         default:
+//             syntax_error();
+//             break;
+//     }
 //
 
+Parser_Token parser::split()
+{
 
-Parser_Token parser::split() {
-
-    std::string::size_type npos=-1;
+    std::string::size_type npos = -1;
     std::string::size_type space_pos;
     std::string::size_type quotation_pos;
-    std::string::size_type cur_quotation_pos=0;
-    std::string::size_type space_n=0;
+    std::string::size_type cur_quotation_pos = 0;
+    std::string::size_type space_n = 0;
     std::string::size_type quotation_n[10];
-    input+=" ";
-    std::string::size_type size=input.size();
+    input += " ";
+    std::string::size_type size = input.size();
     //   quotation_pos=input.find('"');
-    int N=0;
+    int N = 0;
     for (int i = 0; i < size; ++i) {
-        quotation_pos=input.find('"',i);
-        if (quotation_pos!=npos){
+        quotation_pos = input.find('"', i);
+        if (quotation_pos != npos) {
             N++;
-            quotation_n[N]=quotation_pos;
-            i=quotation_pos;
+            quotation_n[N] = quotation_pos;
+            i = quotation_pos;
         }
     }
-    if (N%2!=0){
+    if (N % 2 != 0) {
         return Parser_Token::syntax_error;
     }
-    N=1;
+    N = 1;
     for (int i = 0; i < input.size(); ++i) {
-        if (input[i]!=' '){
+        if (input[i] != ' ') {
             break;
-        } else{
+        } else {
             space_n++;
         }
     }
-    input.erase(0,space_n);
-    quotation_pos=input.find('"');
-    if (quotation_pos!=npos){
+    input.erase(0, space_n);
+    quotation_pos = input.find('"');
+    if (quotation_pos != npos) {
         for (std::string::size_type i = 0; i < size; ++i) {
-            space_pos=input.find(' ',i);
-            quotation_pos=input.find('"',i);
+            space_pos = input.find(' ', i);
+            quotation_pos = input.find('"', i);
             //           if (space_pos==npos&&quotation_pos==npos){
-            if (quotation_pos==npos){
+            if (quotation_pos == npos) {
                 std::string::size_type pos;
                 //        input+=" ";
                 for (; i < size; ++i) {
                     pos = input.find(' ', i);
-                    if (pos < size)
-                    {
+                    if (pos < size) {
                         std::string s = input.substr(i, pos - i);
                         split_result.push_back(s);
-                        for ( i = pos; i < size; ++i) {
-                            if (input[i]!=' '){
+                        for (i = pos; i < size; ++i) {
+                            if (input[i] != ' ') {
                                 //                        i=j;
                                 break;
                             }
@@ -476,28 +548,28 @@ Parser_Token parser::split() {
                 break;
             }
 
-            if (quotation_pos>=i){
-                if (' '==input[quotation_pos-1]&&space_pos>i&&N%2!=0){
+            if (quotation_pos >= i) {
+                if (' ' == input[quotation_pos - 1] && space_pos > i && N % 2 != 0) {
 
-                    cur_quotation_pos=quotation_pos;
-                    std::string sub_input=input.substr(i,space_pos-i);
+                    cur_quotation_pos = quotation_pos;
+                    std::string sub_input = input.substr(i, space_pos - i);
                     split_result.push_back(sub_input);
 
-                    for (i=space_pos; i < size; ++i) {
+                    for (i = space_pos; i < size; ++i) {
 
                         //                        if (input[i]!=' '&&input[i]!='"'){
                         //                            break;
                         //                        }
-                        if (input[i]!=' '){
-                            if (input[i]=='"'){
+                        if (input[i] != ' ') {
+                            if (input[i] == '"') {
                                 i++;
                                 N++;
                                 break;
-                            } else{
+                            } else {
                                 break;
                             }
                         }
-                        cur_quotation_pos=input.find('"',i);
+                        cur_quotation_pos = input.find('"', i);
                     }
                     i--;
 
@@ -510,52 +582,51 @@ Parser_Token parser::split() {
                     //                        continue;
                     //                    }
 
-                } else if (' '==input[quotation_pos+1]&&cur_quotation_pos>0&&N%2==0){
-                    std::string sub_input=input.substr(cur_quotation_pos+1,quotation_pos-cur_quotation_pos-1);
+                } else if (' ' == input[quotation_pos + 1] && cur_quotation_pos > 0 && N % 2 == 0) {
+                    std::string sub_input = input.substr(cur_quotation_pos + 1, quotation_pos - cur_quotation_pos - 1);
                     split_result.push_back(sub_input);
-                    i=quotation_pos+1;
+                    i = quotation_pos + 1;
                     for (; i < size; ++i) {
-                        if (input[i]!=' '){
-                            if (input[i]=='"'){
+                        if (input[i] != ' ') {
+                            if (input[i] == '"') {
                                 i++;
-                                //N++;
+                                // N++;
                                 break;
-                            } else{
+                            } else {
                                 break;
                             }
                         }
                         //                        if (input[i]!=' '&&input[i]!='"'){
                         //                            break;
                         //                        }
-                        cur_quotation_pos=input.find('"',i);
+                        cur_quotation_pos = input.find('"', i);
                     }
                     i--;
                     continue;
-                }else{
+                } else {
                     return Parser_Token::syntax_error;
                 }
-            }else{
-                if (space_pos>i){
-                    std::string sub_input=input.substr(i,space_pos-i);
+            } else {
+                if (space_pos > i) {
+                    std::string sub_input = input.substr(i, space_pos - i);
                     split_result.push_back(sub_input);
-                    i=space_pos-1;
+                    i = space_pos - 1;
                     continue;
-                }else{
+                } else {
                     return Parser_Token::syntax_error;
                 }
             }
         }
-    }else{
+    } else {
         std::string::size_type pos;
         //        input+=" ";
         for (std::string::size_type i = 0; i < size; ++i) {
             pos = input.find(' ', i);
-            if (pos < size)
-            {
+            if (pos < size) {
                 std::string s = input.substr(i, pos - i);
                 split_result.push_back(s);
-                for ( i = pos; i < size; ++i) {
-                    if (input[i]!=' '){
+                for (i = pos; i < size; ++i) {
+                    if (input[i] != ' ') {
                         //                        i=j;
                         break;
                     }
@@ -565,58 +636,60 @@ Parser_Token parser::split() {
         }
     }
 
-    if (split_result[0]=="keys"){
+    if (split_result[0] == "keys") {
         return Parser_Token::key_list_op;
-    }else if (split_result[0]=="exists"){
+    } else if (split_result[0] == "exists") {
         return Parser_Token::exists_key_op;
-    }else if (split_result[0]=="type"){
+    } else if (split_result[0] == "type") {
         return Parser_Token::type_key_op;
-    } else if (split_result[0]=="del"){
+    } else if (split_result[0] == "del") {
         return Parser_Token::del_key_op;
-    }else if (split_result[0]=="dbsize"){
+    } else if (split_result[0] == "dbsize") {
         return Parser_Token::dbsize_op;
-    }else if (split_result[0]=="flushdb"){
+    } else if (split_result[0] == "flushdb") {
         return Parser_Token::flushdb_op;
-    } else if (split_result[0]=="flushall"){
+    } else if (split_result[0] == "flushall") {
         return Parser_Token::flushall_op;
-    } else if (split_result[0]=="select"){
+    } else if (split_result[0] == "select") {
         return Parser_Token::select_n_op;
-    } else if (split_result[0]=="set"){
+    } else if (split_result[0] == "set") {
         return Parser_Token::set_key_value_op;
-    } else if (split_result[0]=="get"){
+    } else if (split_result[0] == "get") {
         return Parser_Token::get_key_op;
-    } else if (split_result[0]=="strlen"){
+    } else if (split_result[0] == "strlen") {
         return Parser_Token::strlen_key;
-    } else if (split_result[0]=="append"){
+    } else if (split_result[0] == "append") {
         return Parser_Token::append_key_value_op;
-    }else if (split_result[0]=="getrange"){
+    } else if (split_result[0] == "getrange") {
         return Parser_Token::getrange_key_start_end;
     } else {
         return Parser_Token::syntax_error;
     }
-
 }
 
-std::unique_ptr<op_result> parser::syntax_error() {
+std::unique_ptr<op_result> parser::syntax_error()
+{
 
     return std::make_unique<op_result>(Parser_Token::syntax_error, "");
 }
 
-std::unique_ptr<op_result> parser::set_key_value_op() {
-    std::unique_ptr<set_key_value_result>res= std::make_unique<set_key_value_result>(Parser_Token::append_key_value_op,
+std::unique_ptr<op_result> parser::set_key_value_op()
+{
+    std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::append_key_value_op,
         "", "", "");
-    if (3==split_result.size()){
+    if (3 == split_result.size()) {
         res.get()->setKey(split_result[1]);
         res.get()->setValue(split_result[2]);
         return res;
-    } else{
+    } else {
         res.get()->setOptype(Parser_Token::arguments_error);
         return res;
     }
 }
 
-std::unique_ptr<op_result> parser::run() {
-    Parser_Token split_token=split();
+std::unique_ptr<op_result> parser::run()
+{
+    Parser_Token split_token = split();
     switch (split_token) {
     case Parser_Token::key_list_op:
         return key_op();
@@ -663,48 +736,52 @@ std::unique_ptr<op_result> parser::run() {
     }
 }
 
-parser::~parser() {
-
+parser::~parser()
+{
 }
 parser::parser()
 {
-
 }
-parser::parser(const std::string &input) : input(input) {
+parser::parser(const std::string &input)
+    : input(input)
+{
     //    int a = split();
     //    parser_result.get()->setOptype(Parser_Token::syntax_error);
     //    parser_result.get()->setResult(NULL);
     //    this->input = input;
 }
 
-void parser::setInput(const std::string &input) {
+void parser::setInput(const std::string &input)
+{
     parser::input = input;
 }
 
-void parser::set_SplitResult_NULL() {
+void parser::set_SplitResult_NULL()
+{
     std::vector<std::string>().swap(split_result);
-
 }
 
-void parser::split_printf() {
+void parser::split_printf()
+{
     for (int i = 0; i < split_result.size(); ++i) {
-        std::cout<<split_result[i]<<"......"<<std::endl;
+        std::cout << split_result[i] << "......" << std::endl;
     }
 }
 
-//bool string_is_int(std::string &str) {
-//    if (str.size()==0){
-//        return false;
-//    }
-//    for (std::string::size_type i = 0; i < str.size(); ++i) {
-//        if (!std::isdigit(str[i])){
-//            return false;
-//        }
-//    }
-//    return true;
-//}
+// bool string_is_int(std::string &str) {
+//     if (str.size()==0){
+//         return false;
+//     }
+//     for (std::string::size_type i = 0; i < str.size(); ++i) {
+//         if (!std::isdigit(str[i])){
+//             return false;
+//         }
+//     }
+//     return true;
+// }
 
-bool string_to_int(std::string &str) {
+bool string_to_int(std::string &str)
+{
     if (str.size() == 0) {
         return false;
     }
