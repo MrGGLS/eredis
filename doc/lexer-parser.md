@@ -10,7 +10,7 @@
 
 1. `key *`: 查看当前库所有key
 2. `exists key`: 判断某个key是否存在
-3. `type key`: 查看key的类型
+3. `type key`: 查看key的类型e
 4. `del key`: 删除指定的key数据
 5. `dbsize`: 查看当前数据库中key的数量
 6. `flushdb`: 清空当前数据库

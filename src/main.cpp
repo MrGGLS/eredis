@@ -1,23 +1,28 @@
 #include "dbdata.h"
+#include "controller.h"
 #include <iostream>
 
 static EasyDB easydb;
 
 int main(int argc, char **argv)
 {
+//解释器测试
+//    std::string input("set 12 13");
+//    Controller ctrl;
+//    ctrl.run(input);
 
-    while (true) {
-        /* 处理输入 */
-        // socket
-        // auto input;
-        // std::cin >> input;
-
-        // return
-        /* Ret ret = contorller->run(input); */
-
-        /* 响应 */
-        // cout << /* 一些输出 */;
-    }
+//    while (true) {
+//        /* 处理输入 */
+//        // socket
+//        // auto input;
+//        // std::cin >> input;
+//
+//        // return
+//        /* Ret ret = contorller->run(input); */
+//
+//        /* 响应 */
+//        // cout << /* 一些输出 */;
+//    }
 
     return 0;
 }
