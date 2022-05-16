@@ -78,15 +78,14 @@ int main(int argc, char **argv)
     while (1) {
         recv_len = recv(s_accept, input, 100, 0);
         if (recv_len < 0) {
-
             break;
         }
 
+        //处理input数据并发送到客户端
         std::cin >> output;
 
         send_len = send(s_accept, output, 100, 0);
         if (send_len < 0) {
-
             break;
         }
     }
