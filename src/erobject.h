@@ -6,9 +6,9 @@
 #include <vector>
 
 enum class ObjectType {
-    ER_UNKNOWN = 0,
-    ER_STRING,
-    ER_List,
+    EREDIS_UNKNOWN = 0,
+    EREDIS_STRING,
+    EREDIS_List,
 };
 
 struct Unknown {

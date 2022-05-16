@@ -21,9 +21,6 @@
 #define EREDIS_TIMEOUT 0 // default client timeout: infinite
 #define EREDIS_DEFAULT_DB_NUM 16 // default db num
 
-/*object types*/
-#define EREDIS_STRING 0
-#define EREDIS_LIST 1
 
 /* Objects encoding. Some kind of objects like Strings and Hashes can be
  * internally represented in multiple ways. The 'encoding' field of the object
