@@ -7,8 +7,8 @@
 
 enum class ObjectType {
     EREDIS_UNKNOWN = 0,
-    EREDIS_STRING,
-    EREDIS_List,
+    EREDIS_STRING = 1,
+    EREDIS_List = 2,
 };
 
 struct Unknown {
@@ -40,12 +40,15 @@ private:
 
 public:
     explicit ERObject(ObjectType type, void *value);
-    ObjectType get_type();
+    explicit ERObject();
+    ObjectType get_type() const;
     bool is_unknown();
     bool is_string();
     bool is_list();
-    std::string get_str();
-    std::vector<std::string> get_list();
+    std::string get_str() const;
+    std::vector<std::string> get_list() const;
+    void set_str(std::string str);
+    void set_list(std::vector<std::string> list);
 };
 
 #endif //__EROBJECT_H__
