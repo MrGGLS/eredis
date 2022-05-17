@@ -5,7 +5,10 @@
 #ifndef EASY_REDIS_EREDIS_HPP
 #define EASY_REDIS_EREDIS_HPP
 
+#include "erobject.h"
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 #define ERDB_FILENAME "MAIN.ERDB"
 /*error codes*/
@@ -18,9 +21,6 @@
 #define EREDIS_TIMEOUT 0 // default client timeout: infinite
 #define EREDIS_DEFAULT_DB_NUM 16 // default db num
 
-/*object types*/
-#define EREDIS_STRING 0
-#define EREDIS_LIST 1
 
 /* Objects encoding. Some kind of objects like Strings and Hashes can be
  * internally represented in multiple ways. The 'encoding' field of the object
@@ -49,19 +49,25 @@
 #define EREDIS_NOTIFY_EVICTED (1 << 9) /* e */
 #define EREDIS_NOTIFY_ALL (EREDIS_NOTIFY_GENERIC | EREDIS_NOTIFY_STRING | EREDIS_NOTIFY_LIST | EREDIS_NOTIFY_SET | EREDIS_NOTIFY_HASH | EREDIS_NOTIFY_ZSET | EREDIS_NOTIFY_EXPIRED | EREDIS_NOTIFY_EVICTED) /* A */
 
-struct Dict {};
+/* struct Dict { */
+/*     std::string key; */
+/*     ERObject *value; */
+/* }; */
 
 struct RedisDb {
 
     /*该数据库下的所有键值对*/
-    Dict *dict; /* The keyspace for this DB */
+    /* Dict *dict; /1* The keyspace for this DB *1/ */
+    std::unordered_map<std::string, ERObject> dict;
 
     /*有期限的键字典（key,value）= (键，过期时间)
      * 进行键操作时需先判断key是否已过期（lazy）*/
-    Dict *expires; /* Timeout of keys with a timeout set */
+    /* Dict *expires; /1* Timeout of keys with a timeout set *1/ */
+    std::unordered_map<std::string, std::time_t> expires;
 
     //发布订阅机制需要
-    Dict *watched_keys; /* WATCHED keys for MULTI/EXEC CAS */
+    /* Dict *watched_keys; /1* WATCHED keys for MULTI/EXEC CAS *1/ */
+    std::unordered_map<std::string, ERObject> watched_keys;
 
     int id; /* Database ID */
 };
@@ -74,7 +80,8 @@ class RedisServer {
     std::string server_auth; /* password */
 
     // databases
-    RedisDb *db;
+    /* RedisDb *db; */
+    std::vector<RedisDb> db;
 
     /* Networking */
     std::string hostname; /* Hostname of server */
@@ -86,7 +93,8 @@ class RedisServer {
     char *unixsocket; /* UNIX socket path */
     mode_t unixsocketperm; /* UNIX socket permission */
 
-    RedisClient *current_client; /* Current client*/
+    /* RedisClient *current_client;  Current client  */
+    std::vector<RedisClient> current_client;
 
     /* Fields used only for stats */
     // 服务器启动时间
