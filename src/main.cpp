@@ -1,6 +1,7 @@
 #include "controller.h"
 #include "eredis.hpp"
 #include <iostream>
+
 void test();
 int main(int argc, char **argv)
 {
@@ -22,12 +23,15 @@ int main(int argc, char **argv)
     //        /* 响应 */
     //        // cout << /* 一些输出 */;
     //    }
-
     return 0;
 }
 
 void test(){
     auto server = getInstanceOfServer();
+
+    std::thread check_keys_thread(clear_invalid_keys,&server);
+    check_keys_thread.detach();
+
     std::string* value = new std::string ("hehe");
     ERObject object = ERObject(ObjectType::EREDIS_STRING,(void *) value);
     //    std::cout<<object.get_str()<<std::endl;

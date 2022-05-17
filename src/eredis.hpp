@@ -6,10 +6,14 @@
 #define EASY_REDIS_EREDIS_HPP
 
 #include "erobject.h"
+#include <thread>
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include <ctime>
+#include <chrono>
+#include <thread>
+//#include "iostream"
 
 #define ERDB_FILENAME "MAIN.ERDB"
 /*error codes*/
@@ -22,6 +26,7 @@
 #define EREDIS_TIMEOUT 0 // default client timeout: infinite
 #define EREDIS_DEFAULT_DB_ID 0
 #define EREDIS_DEFAULT_DB_NUM 16 // default db num
+#define EREDIS_DEFAULT_DEL_INTERVAL 1000 //default check keys validity interval
 
 /* Objects encoding. Some kind of objects like Strings and Hashes can be
  * internally represented in multiple ways. The 'encoding' field of the object
@@ -106,6 +111,7 @@ struct ERedisServer {
     int erdb_compression; /* Use compression in ERDB? */
     int erdb_checksum; /* Use ERDB checksum? */
 
+    /* kv operations */
     std::string get_all_keys(int db_id);
     std::string exists_key(int db_id, std::string key);
     std::string get_key_type(int db_id, std::string key);
@@ -119,9 +125,13 @@ struct ERedisServer {
     std::string get_strlen(int db_id, std::string key);
     std::string append_value(int db_id, std::string key, std::string str);
     std::string getrange(int db_id, std::string key, int start ,int end);
+
     ERedisServer(std::vector<ERedisDb*> _db, int db_num);
     ERedisServer(){};
 };
 ERedisServer getInstanceOfServer(int db_num=EREDIS_DEFAULT_DB_NUM);
+
+/* check key's validity, delete all invalid keys per interval milliseconds */
+void clear_invalid_keys(ERedisServer* server);
 
 #endif // EASY_REDIS_EREDIS_HPP

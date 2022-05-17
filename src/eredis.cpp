@@ -121,6 +121,7 @@ std::string ERedisServer::get_strlen(int db_id, std::string key) {
         del_key(db_id,key);
     if(edb->dict.count(key)){
         return std::to_string(edb->dict[key].get_str().length());
+        //        return ""+edb->dict[key].get_str().length();
     }
     return REDIS_FAIL;
 }
@@ -152,4 +153,20 @@ ERedisServer getInstanceOfServer(int db_num){
         db.push_back(new ERedisDb(i));
     }
     return ERedisServer(db, db_num);
+}
+
+void clear_invalid_keys(ERedisServer* server){
+    while (true){
+        for (const auto &edb: server->db){
+            for (const auto &kv: edb->dict){
+                if(edb->expires.count(kv.first)&&edb->expires[kv.first]< time(0)){
+                    edb->dict.erase(kv.first);
+                    edb->expires.erase(kv.first);
+                }
+            }
+        }
+        //        std::cout<<"hehe................."<<std::endl;
+        //        std::this_thread::sleep_for(std::chrono::milliseconds (100));
+        std::this_thread::sleep_for(std::chrono::milliseconds (EREDIS_DEFAULT_DEL_INTERVAL));
+    }
 }
