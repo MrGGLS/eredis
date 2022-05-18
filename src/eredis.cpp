@@ -16,11 +16,11 @@ ERedisServer::ERedisServer(std::vector<ERedisDb *> _db, int _db_num)
 ERedisServer::ERedisServer(int db_num)
     : db_num(db_num)
 {
-    std::vector<ERedisDb *> db;
+    std::vector<ERedisDb *> _db;
     for (auto i = 0; i < db_num; i++) {
-        db.push_back(new ERedisDb(i));
+        _db.push_back(new ERedisDb(i));
     }
-    this->db = db;
+    this->db = _db;
 }
 
 std::string ERedisServer::get_all_keys(int db_id)
