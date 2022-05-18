@@ -1,5 +1,6 @@
 #include "controller.h"
 #include "eredis.hpp"
+#include "erdb.hpp"
 #include <iostream>
 #if _WIN32
 #include <winsock.h>
