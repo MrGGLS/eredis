@@ -7,6 +7,7 @@ int Controller::run(std::string input)
 {
     parser.setInput(input);
     auto op_result = parser.run();
+    parser.set_SplitResult_NULL();
     switch (op_result.get()->getOptype()) {
     case Parser_Token::key_list_op:
         // data

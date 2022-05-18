@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "erobject.h"
 enum Parser_Token {
     //操作
     key_list_op = 1,
@@ -124,19 +125,19 @@ private:
 // set key
 class set_key_value_result : public op_result {
 public:
-    set_key_value_result(int optype, const std::string &result, const std::string &key, const std::string &value);
+    set_key_value_result(int optype, const std::string &result, const std::string &key,const ERObject &value);
 
     const std::string &getKey() const;
 
-    const std::string &getValue() const;
+    const ERObject &getValue() const;
 
     void setKey(const std::string &key);
 
-    void setValue(const std::string &value);
+    void setValue(const ERObject &value);
 
 private:
     std::string key;
-    std::string value;
+    ERObject value;
 };
 // get key
 class get_key_result : public op_result {

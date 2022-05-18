@@ -301,8 +301,7 @@ void select_db_result::setDbN(const int &dbN)
     db_n = dbN;
 }
 
-set_key_value_result::set_key_value_result(int optype, const std::string &result, const std::string &key,
-    const std::string &value)
+set_key_value_result::set_key_value_result(int optype, const std::string &result, const std::string &key,const ERObject &value)
     : op_result(optype, result)
     , key(key)
     , value(value)
@@ -314,7 +313,7 @@ const std::string &set_key_value_result::getKey() const
     return key;
 }
 
-const std::string &set_key_value_result::getValue() const
+const ERObject &set_key_value_result::getValue() const
 {
     return value;
 }
@@ -324,7 +323,7 @@ void set_key_value_result::setKey(const std::string &key)
     set_key_value_result::key = key;
 }
 
-void set_key_value_result::setValue(const std::string &value)
+void set_key_value_result::setValue(const ERObject &value)
 {
     set_key_value_result::value = value;
 }
@@ -675,14 +674,16 @@ std::unique_ptr<op_result> parser::syntax_error()
 
 std::unique_ptr<op_result> parser::set_key_value_op()
 {
-    std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::append_key_value_op,
-        "", "", "");
     if (3 == split_result.size()) {
-        res.get()->setKey(split_result[1]);
-        res.get()->setValue(split_result[2]);
+        ERObject object = ERObject(ObjectType::EREDIS_STRING,(void *) &split_result[2]);
+        std::unique_ptr<set_key_value_result>res= std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op,"",split_result[1],ERObject(ObjectType::EREDIS_STRING,(void *)&split_result[2]));
         return res;
     } else {
-        res.get()->setOptype(Parser_Token::arguments_error);
+        auto start=split_result.begin()+2;
+        auto end=split_result.end();
+        std::vector<std::string>list_value;
+        list_value.assign(start,end);
+        std::unique_ptr<set_key_value_result>res= std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op,"",split_result[1],ERObject(ObjectType::EREDIS_List,(void *)&list_value));
         return res;
     }
 }
