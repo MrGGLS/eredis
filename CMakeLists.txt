@@ -20,5 +20,6 @@ ADD_EXECUTABLE(easy-redis
     src/eredis.hpp
     src/erobject.h
         src/Parser.h
+        src/erdb.cpp
 )
 

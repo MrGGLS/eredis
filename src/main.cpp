@@ -11,10 +11,11 @@
 #endif
 void initialization();
 
-void test();
+void testServer(ERedisServer& server);
+void testSave();
 int main(int argc, char **argv)
 {
-    test();
+    testSave();
     //定义长度变量
     int send_len = 0;
     int recv_len = 0;
@@ -118,72 +119,83 @@ void initialization()
 }
 #endif
 
-void test()
-{
+void testSave(){
     auto server = ERedisServer();
+    testServer(server);
+    save_data(&server);
+    server = ERedisServer();
+    load_data(&server);
+    std::cout<<"-------------load data---------------"<<std::endl;
+    testServer(server);
+}
 
-    std::thread check_keys_thread(clear_invalid_keys, &server);
-    check_keys_thread.detach();
+void testServer(ERedisServer& server){
+    //    auto server = ERedisServer();
 
-    std::string *value = new std::string("hehe");
-    ERObject object = ERObject(ObjectType::EREDIS_STRING, (void *)value);
+    //    std::thread check_keys_thread(clear_invalid_keys,&server);
+    //    check_keys_thread.detach();
+    //    std::thread check_clients_thread(clear_idle_clients,&server);
+    //    check_clients_thread.detach();
+
+    std::string* value = new std::string ("hehe");
+    ERObject object = ERObject(ObjectType::EREDIS_STRING,(void *) value);
     //    std::cout<<object.get_str()<<std::endl;
     /* test set key */
-    std::cout << "test set key" << std::endl;
-    std::cout << server.set_key(0, "k1", object) << std::endl;
+    std::cout<<"test set key"<<std::endl;
+    std::cout<<server.set_key(0,"k1",object)<<std::endl;
     /* test get key */
-    std::cout << "test get key" << std::endl;
-    std::cout << server.get_key(0, "k1") << std::endl;
+    std::cout<<"test get key"<<std::endl;
+    std::cout<<server.get_key(0,"k1")<<std::endl;
     /* get not exist key */
-    std::cout << "get not exist key" << std::endl;
-    std::cout << server.get_key(0, "k2") << std::endl;
+    std::cout<<"get not exist key"<<std::endl;
+    std::cout<<server.get_key(0,"k2")<<std::endl;
     /* delete same key two times */
-    std::cout << "delete same key two times" << std::endl;
-    std::cout << server.del_key(0, "k1") << std::endl;
-    std::cout << server.del_key(0, "k1") << std::endl;
+    std::cout<<"delete same key two times"<<std::endl;
+    std::cout<<server.del_key(0,"k1")<<std::endl;
+    std::cout<<server.del_key(0,"k1")<<std::endl;
     /* test get range */
-    std::cout << "test get range" << std::endl;
-    std::cout << server.set_key(0, "k1", object) << std::endl;
-    std::cout << server.getrange(0, "k1", 1, 3) << std::endl;
+    std::cout<<"test get range"<<std::endl;
+    std::cout<<server.set_key(0,"k1",object)<<std::endl;
+    std::cout<<server.getrange(0,"k1",1,3)<<std::endl;
     /* test append */
-    std::cout << "test append" << std::endl;
-    std::cout << server.append_value(0, "k1", "hihi") << std::endl;
-    std::cout << server.get_strlen(0, "k1") << std::endl;
+    std::cout<<"test append"<<std::endl;
+    std::cout<<server.append_value(0,"k1","hihi")<<std::endl;
+    std::cout<<server.get_strlen(0,"k1")<<std::endl;
     /* test get key type */
-    std::cout << "delete get key type" << std::endl;
-    std::cout << server.get_key_type(0, "k1") << std::endl;
+    std::cout<<"delete get key type"<<std::endl;
+    std::cout<<server.get_key_type(0,"k1")<<std::endl;
 
-    std::cout << server.set_key(0, "k1", object) << std::endl;
-    std::cout << server.set_key(0, "k2", object) << std::endl;
-    std::cout << server.set_key(0, "k3", object) << std::endl;
+    std::cout<<server.set_key(0,"k1",object)<<std::endl;
+    std::cout<<server.set_key(0,"k2",object)<<std::endl;
+    std::cout<<server.set_key(0,"k3",object)<<std::endl;
     /* test get all keys */
-    std::cout << "test get all keys" << std::endl;
+    std::cout<<"test get all keys"<<std::endl;
 
-    std::cout << server.get_all_keys(0) << std::endl;
+    std::cout<<server.get_all_keys(0)<<std::endl;
     /* test get db size */
-    std::cout << "test get db size" << std::endl;
-    std::cout << server.get_dbsize(0) << std::endl;
+    std::cout<<"test get db size"<<std::endl;
+    std::cout<<server.get_dbsize(0)<<std::endl;
     /* test exists key */
-    std::cout << "test exists key" << std::endl;
-    std::cout << server.exists_key(0, "k4") << std::endl;
-    std::cout << server.exists_key(0, "k2") << std::endl;
+    std::cout<<"test exists key"<<std::endl;
+    std::cout<<server.exists_key(0,"k4")<< std::endl;
+    std::cout<<server.exists_key(0,"k2")<< std::endl;
     /* test flush db*/
-    std::cout << "test flush db" << std::endl;
-    std::cout << server.flushdb(0) << std::endl;
-    std::cout << server.get_dbsize(0) << std::endl;
+    std::cout<<"test flush db"<<std::endl;
+    std::cout<<server.flushdb(0)<<std::endl;
+    std::cout<<server.get_dbsize(0)<<std::endl;
     /* test flush all */
-    std::cout << "test flush all" << std::endl;
-    std::cout << server.set_key(0, "k1", object) << std::endl;
-    std::cout << server.set_key(0, "k2", object) << std::endl;
-    std::cout << server.set_key(0, "k3", object) << std::endl;
-    std::cout << server.set_key(1, "k1", object) << std::endl;
-    std::cout << server.set_key(1, "k2", object) << std::endl;
-    std::cout << server.set_key(1, "k3", object) << std::endl;
-    std::cout << server.get_dbsize(0) << std::endl;
-    std::cout << server.get_dbsize(1) << std::endl;
-    std::cout << server.flushall() << std::endl;
-    std::cout << server.get_dbsize(0) << std::endl;
-    std::cout << server.get_dbsize(1) << std::endl;
+    std::cout<<"test flush all"<<std::endl;
+    std::cout<<server.set_key(0,"k1",object)<<std::endl;
+    std::cout<<server.set_key(0,"k2",object)<<std::endl;
+    std::cout<<server.set_key(0,"k3",object)<<std::endl;
+    std::cout<<server.set_key(1,"k1",object)<<std::endl;
+    std::cout<<server.set_key(1,"k2",object)<<std::endl;
+    std::cout<<server.set_key(1,"k3",object)<<std::endl;
+    std::cout<<server.get_dbsize(0)<<std::endl;
+    std::cout<<server.get_dbsize(1)<<std::endl;
+    std::cout<<server.flushall()<<std::endl;
+    std::cout<<server.get_dbsize(0)<<std::endl;
+    std::cout<<server.get_dbsize(1)<<std::endl;
 }
 
 /* CLI */

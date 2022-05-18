@@ -14,10 +14,10 @@
 #include <vector>
 //#include "iostream"
 
-#define ERDB_FILENAME "MAIN.ERDB"
+
 /*error codes*/
-#define REDIS_OK "1"
-#define REDIS_FAIL "0"
+#define REDIS_OK "OK"
+#define REDIS_FAIL "ERROR"
 
 /*default server config*/
 #define EREDIS_SERVER_PORT 6379 // 服务器端口
@@ -26,33 +26,8 @@
 #define EREDIS_DEFAULT_DB_ID 0
 #define EREDIS_DEFAULT_DB_NUM 16 // default db num
 #define EREDIS_DEFAULT_DEL_INTERVAL 1000 // default check keys validity interval
-
-/* Objects encoding. Some kind of objects like Strings and Hashes can be
- * internally represented in multiple ways. The 'encoding' field of the object
- * is set to one of this fields for this object. */
-#define EREDIS_ENCODING_RAW 0 /* Raw representation */
-#define EREDIS_ENCODING_INT 1 /* Encoded as integer */
-#define EREDIS_ENCODING_HT 2 /* Encoded as hash table */
-#define EREDIS_ENCODING_LINKEDLIST 4 /* Encoded as regular linked list */
-#define EREDIS_ENCODING_ZIPLIST 5 /* Encoded as ziplist */
-#define EREDIS_ENCODING_INTSET 6 /* Encoded as intset */
-#define EREDIS_ENCODING_SKIPLIST 7 /* Encoded as skiplist */
-#define EREDIS_ENCODING_EMBSTR 8 /* Embedded sds string encoding */
-
-/* Keyspace changes notification classes. Every class is associated with a
- * character for configuration purposes.
- * 如果要实现发布订阅机制*/
-#define EREDIS_NOTIFY_KEYSPACE (1 << 0) /* K */
-#define EREDIS_NOTIFY_KEYEVENT (1 << 1) /* E */
-#define EREDIS_NOTIFY_GENERIC (1 << 2) /* g */
-#define EREDIS_NOTIFY_STRING (1 << 3) /* $ */
-#define EREDIS_NOTIFY_LIST (1 << 4) /* l */
-#define EREDIS_NOTIFY_SET (1 << 5) /* s */
-#define EREDIS_NOTIFY_HASH (1 << 6) /* h */
-#define EREDIS_NOTIFY_ZSET (1 << 7) /* z */
-#define EREDIS_NOTIFY_EXPIRED (1 << 8) /* x */
-#define EREDIS_NOTIFY_EVICTED (1 << 9) /* e */
-#define EREDIS_NOTIFY_ALL (EREDIS_NOTIFY_GENERIC | EREDIS_NOTIFY_STRING | EREDIS_NOTIFY_LIST | EREDIS_NOTIFY_SET | EREDIS_NOTIFY_HASH | EREDIS_NOTIFY_ZSET | EREDIS_NOTIFY_EXPIRED | EREDIS_NOTIFY_EVICTED) /* A */
+#define EREDIS_DEFAULT_DEL_CLIENT_INTERVAL 1000 // default check client's validity interval
+#define EREDIS_DEFAULT_CLIENT_TIMEOUT (5*60) // client max idle time
 
 struct ERedisDb {
     ERedisDb(int id);
@@ -75,6 +50,14 @@ struct ERedisDb {
 struct ERedisClient {
     int client_id; /* client unique identity */
     int db_id = EREDIS_DEFAULT_DB_ID; /* which db the client is using */
+
+    time_t c_time;/* client created time */
+    time_t last_interaction;/* last interaction with server, for clear use */
+
+    std::string client_name;/* can be null */
+
+    std::string hostname;
+    int port;
 
     // TODO: 通信模块
     // all socket function
@@ -99,8 +82,8 @@ struct ERedisServer {
     //    mode_t unixsocketperm; /* UNIX socket permission */
 
     /* RedisClient *current_client;  Current client  */
-    std::vector<ERedisClient *> cur_client;
-
+    //    std::vector<ERedisClient *> clients;
+    std::unordered_map<int,ERedisClient*> clients;/* pair: (cliend_id,client) */
     /* Fields used only for stats */
     // 服务器启动时间
     time_t start_time; /* Server start time */
@@ -134,5 +117,8 @@ struct ERedisServer {
 
 /* check key's validity, delete all invalid keys per interval milliseconds */
 [[noreturn]] void clear_invalid_keys(ERedisServer *server);
+
+/* check client's validity, delete all invalid client per interval milliseconds */
+[[noreturn]] void clear_idle_clients(ERedisServer *server);
 
 #endif // EASY_REDIS_EREDIS_HPP

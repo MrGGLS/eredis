@@ -119,7 +119,7 @@ std::string ERedisServer::flushall()
 
 std::string ERedisServer::select_db(int db_id, int client_id)
 {
-    ERedisClient *client = (this->cur_client[client_id]);
+    ERedisClient *client = (this->clients[client_id]);
     client->db_id = db_id;
     return REDIS_OK;
 }
@@ -191,5 +191,17 @@ std::string ERedisServer::getrange(int db_id, std::string key, int32_t start, in
         //        std::cout<<"hehe................."<<std::endl;
         //        std::this_thread::sleep_for(std::chrono::milliseconds (100));
         std::this_thread::sleep_for(std::chrono::milliseconds(EREDIS_DEFAULT_DEL_INTERVAL));
+    }
+}
+
+[[noreturn]] void clear_idle_clients(ERedisServer *server)
+{
+    while(true){
+        for (const auto &kv: server->clients){
+            if(time(0)-kv.second->last_interaction>=EREDIS_DEFAULT_CLIENT_TIMEOUT){
+                server->clients.erase(kv.first);
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(EREDIS_DEFAULT_DEL_CLIENT_INTERVAL));
     }
 }
