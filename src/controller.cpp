@@ -2,7 +2,7 @@
 // Created by 86136 on 2022/5/16.
 //
 #include "controller.h"
-//Controller::Controller() {}
+// Controller::Controller() {}
 int Controller::run(std::string input)
 {
     parser.setInput(input);
