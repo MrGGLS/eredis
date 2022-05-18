@@ -6,13 +6,12 @@
 #define EASY_REDIS_EREDIS_HPP
 
 #include "erobject.h"
-#include <thread>
+#include <chrono>
+#include <ctime>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <vector>
-#include <ctime>
-#include <chrono>
-#include <thread>
 //#include "iostream"
 
 #define ERDB_FILENAME "MAIN.ERDB"
@@ -26,7 +25,7 @@
 #define EREDIS_TIMEOUT 0 // default client timeout: infinite
 #define EREDIS_DEFAULT_DB_ID 0
 #define EREDIS_DEFAULT_DB_NUM 16 // default db num
-#define EREDIS_DEFAULT_DEL_INTERVAL 1000 //default check keys validity interval
+#define EREDIS_DEFAULT_DEL_INTERVAL 1000 // default check keys validity interval
 
 /* Objects encoding. Some kind of objects like Strings and Hashes can be
  * internally represented in multiple ways. The 'encoding' field of the object
@@ -74,8 +73,11 @@ struct ERedisDb {
 };
 
 struct ERedisClient {
-    int client_id;/* client unique identity */
-    int db_id=EREDIS_DEFAULT_DB_ID;/* which db the client is using */
+    int client_id; /* client unique identity */
+    int db_id = EREDIS_DEFAULT_DB_ID; /* which db the client is using */
+
+    // TODO: 通信模块
+    // all socket function
 };
 
 struct ERedisServer {
@@ -84,7 +86,7 @@ struct ERedisServer {
 
     // databases
     /* RedisDb *db; */
-    std::vector<ERedisDb*> db;
+    std::vector<ERedisDb *> db;
 
     /* Networking */
     std::string hostname; /* Hostname of server */
@@ -97,7 +99,7 @@ struct ERedisServer {
     //    mode_t unixsocketperm; /* UNIX socket permission */
 
     /* RedisClient *current_client;  Current client  */
-    std::vector<ERedisClient*> cur_client;
+    std::vector<ERedisClient *> cur_client;
 
     /* Fields used only for stats */
     // 服务器启动时间
@@ -119,19 +121,18 @@ struct ERedisServer {
     std::string get_dbsize(int db_id);
     std::string flushdb(int db_id);
     std::string flushall();
-    std::string select_db(int db_id, int client_id);/* need to know who is using the db */
+    std::string select_db(int db_id, int client_id); /* need to know who is using the db */
     std::string set_key(int db_id, std::string key, ERObject erObject);
     std::string get_key(int db_id, std::string key);
     std::string get_strlen(int db_id, std::string key);
     std::string append_value(int db_id, std::string key, std::string str);
-    std::string getrange(int db_id, std::string key, int start ,int end);
+    std::string getrange(int db_id, std::string key, int start, int end);
 
-    ERedisServer(std::vector<ERedisDb*> _db, int db_num);
-    ERedisServer(){};
+    ERedisServer(std::vector<ERedisDb *> _db, int db_num);
+    ERedisServer(int db_num = EREDIS_DEFAULT_DB_NUM);
 };
-ERedisServer getInstanceOfServer(int db_num=EREDIS_DEFAULT_DB_NUM);
 
 /* check key's validity, delete all invalid keys per interval milliseconds */
-void clear_invalid_keys(ERedisServer* server);
+[[noreturn]] void clear_invalid_keys(ERedisServer *server);
 
 #endif // EASY_REDIS_EREDIS_HPP

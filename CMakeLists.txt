@@ -11,7 +11,7 @@ ADD_EXECUTABLE(easy-redis
     src/dbops.cpp
     src/erobject.cpp
     src/controller.cpp
-    src/parser.cpp
+        src/Parser.cpp
     src/main.cpp
     src/controller.h
     src/dbdata.h
@@ -19,6 +19,6 @@ ADD_EXECUTABLE(easy-redis
     src/erdb.hpp
     src/eredis.hpp
     src/erobject.h
-    src/parser.h
+        src/Parser.h
 )
 

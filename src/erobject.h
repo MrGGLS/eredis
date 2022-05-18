@@ -11,7 +11,7 @@ enum class ObjectType {
     EREDIS_List = 2,
 };
 
-struct Unknown {
+struct ERUnknown {
 };
 
 struct ERString {
@@ -23,6 +23,7 @@ struct ERList {
     std::vector<std::string> list;
 };
 // ... 其他类型
+
 /**
  * ERObject: 通用枚举类的实现
  *
@@ -36,7 +37,7 @@ struct ERList {
 class ERObject {
 private:
     ObjectType type;
-    std::variant<Unknown, ERString, ERList> value;
+    std::variant<ERUnknown, ERString, ERList> value;
 
 public:
     explicit ERObject(ObjectType type, void *value);
