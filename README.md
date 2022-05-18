@@ -2,9 +2,9 @@
 
 ## 1 组件设计：
 
-1. 词法、语法分析器（doc/lexer-parser.md）
+1. 词法、语法分析器（doc/lexer-Parser.md）
 2. 语法树生成（doc/grammer.md）
-3. 语法树解析（doc/parser-node.md）
+3. 语法树解析（doc/Parser-node.md）
 4. 数据处理系统（doc/data-manage.md）
 5. 输入输出接口（doc/io-interface.md）
 

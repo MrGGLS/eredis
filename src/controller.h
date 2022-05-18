@@ -1,13 +1,15 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
-#include "parser.h"
+#include "eredis.hpp"
+#include "Parser.h"
 #include <string>
 class Controller {
 private:
-    parser parser;
-    /* Parser parser; */
-    /* DBOPS dbops; */
+    Parser parser;
+    ERedisServer server;
+    ERedisClient client;
+
 public:
     Controller();
     int run(std::string input);

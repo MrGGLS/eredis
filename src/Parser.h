@@ -4,6 +4,7 @@
 
 #ifndef EASY_REDIS_PARSER_H
 #define EASY_REDIS_PARSER_H
+#include "erobject.h"
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -52,6 +53,7 @@ private:
     int optype;
     std::string result;
 };
+
 //不同操作继承根操作类
 // key *操作
 class key_result : public op_result {
@@ -59,6 +61,7 @@ private:
 public:
     key_result(int optype, const std::string &result);
 };
+
 // exist key操作
 class exist_key_result : public op_result {
 public:
@@ -71,6 +74,7 @@ public:
 private:
     std::string key_n;
 };
+
 class type_key_result : public op_result {
 public:
     type_key_result(int optype, const std::string &result, const std::string &keyN);
@@ -82,6 +86,7 @@ public:
 private:
     std::string key_n;
 };
+
 // del key
 class del_key_result : public op_result {
 public:
@@ -94,21 +99,25 @@ public:
 private:
     std::string key_n;
 };
+
 // dbsize
 class dbsize_result : public op_result {
 public:
     dbsize_result(int optype, const std::string &result);
 };
+
 // flushdb
 class flushdb_result : public op_result {
 public:
     flushdb_result(int optype, const std::string &result);
 };
+
 // flushall
 class flushall_result : public op_result {
 public:
     flushall_result(int optype, const std::string &result);
 };
+
 // select db
 class select_db_result : public op_result {
 public:
@@ -121,23 +130,25 @@ public:
 private:
     int db_n;
 };
+
 // set key
 class set_key_value_result : public op_result {
 public:
-    set_key_value_result(int optype, const std::string &result, const std::string &key, const std::string &value);
+    set_key_value_result(int optype, const std::string &result, const std::string &key, const ERObject &value);
 
     const std::string &getKey() const;
 
-    const std::string &getValue() const;
+    const ERObject &getValue() const;
 
     void setKey(const std::string &key);
 
-    void setValue(const std::string &value);
+    void setValue(const ERObject &value);
 
 private:
     std::string key;
-    std::string value;
+    ERObject value;
 };
+
 // get key
 class get_key_result : public op_result {
 public:
@@ -150,6 +161,7 @@ public:
 private:
     std::string key;
 };
+
 // strlen
 class strlen_result : public op_result {
 public:
@@ -162,6 +174,7 @@ public:
 private:
     std::string key;
 };
+
 // append key value
 class append_key_value_result : public op_result {
 public:
@@ -179,6 +192,7 @@ private:
     std::string key;
     std::string value;
 };
+
 // getstrange
 class getrange_result : public op_result {
 public:
@@ -205,15 +219,15 @@ private:
 
 // Parser_Token split(std::string &str,std::vector<std::string>&result);
 bool string_to_int(std::string &str);
-class parser {
+class Parser {
 public:
-    parser();
-    parser(const std::string &input);
+    Parser();
+    Parser(const std::string &input);
 
-    //    parser(std::string &input);
+    //    Parser(std::string &input);
     Parser_Token split();
 
-    virtual ~parser();
+    virtual ~Parser();
 
     std::unique_ptr<op_result> key_op();
     std::unique_ptr<op_result> exist_key_op();

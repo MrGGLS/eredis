@@ -1,10 +1,10 @@
 //
 // Created by 86136 on 2022/5/9.
 //
-#include "parser.h"
+#include "Parser.h"
 
 //操作对象的返回函数
-std::unique_ptr<op_result> parser::key_op()
+std::unique_ptr<op_result> Parser::key_op()
 {
     std::unique_ptr<key_result> res = std::make_unique<key_result>(Parser_Token::key_list_op, "");
     if (split_result.size() == 2) {
@@ -15,7 +15,7 @@ std::unique_ptr<op_result> parser::key_op()
     res.get()->setOptype(Parser_Token::arguments_error);
     return res;
 }
-std::unique_ptr<op_result> parser::exist_key_op()
+std::unique_ptr<op_result> Parser::exist_key_op()
 {
     std::unique_ptr<exist_key_result> res = std::make_unique<exist_key_result>(Parser_Token::exists_key_op, "", "");
     if (split_result.size() == 2) {
@@ -27,7 +27,7 @@ std::unique_ptr<op_result> parser::exist_key_op()
     }
 }
 
-std::unique_ptr<op_result> parser::type_key_op()
+std::unique_ptr<op_result> Parser::type_key_op()
 {
     std::unique_ptr<type_key_result> res = std::make_unique<type_key_result>(Parser_Token::type_key_op, "", "");
     if (split_result.size() == 2) {
@@ -39,7 +39,7 @@ std::unique_ptr<op_result> parser::type_key_op()
     }
 }
 
-std::unique_ptr<op_result> parser::del_key_op()
+std::unique_ptr<op_result> Parser::del_key_op()
 {
     std::unique_ptr<del_key_result> res = std::make_unique<del_key_result>(Parser_Token::del_key_op, "", "");
     if (split_result.size() == 2) {
@@ -51,7 +51,7 @@ std::unique_ptr<op_result> parser::del_key_op()
     }
 }
 
-std::unique_ptr<op_result> parser::dbsize_op()
+std::unique_ptr<op_result> Parser::dbsize_op()
 {
     std::unique_ptr<dbsize_result> res = std::make_unique<dbsize_result>(Parser_Token::dbsize_op, "");
     if (split_result.size() == 1) {
@@ -62,7 +62,7 @@ std::unique_ptr<op_result> parser::dbsize_op()
     }
 }
 
-std::unique_ptr<op_result> parser::flushdb_op()
+std::unique_ptr<op_result> Parser::flushdb_op()
 {
     std::unique_ptr<flushdb_result> res = std::make_unique<flushdb_result>(Parser_Token::flushdb_op, "");
     if (split_result.size() == 1) {
@@ -73,7 +73,7 @@ std::unique_ptr<op_result> parser::flushdb_op()
     }
 }
 
-std::unique_ptr<op_result> parser::flushall_op()
+std::unique_ptr<op_result> Parser::flushall_op()
 {
     std::unique_ptr<flushall_result> res = std::make_unique<flushall_result>(Parser_Token::flushall_op, "");
     if (split_result.size() == 1) {
@@ -84,7 +84,7 @@ std::unique_ptr<op_result> parser::flushall_op()
     }
 }
 
-std::unique_ptr<op_result> parser::select_db_op()
+std::unique_ptr<op_result> Parser::select_db_op()
 {
     std::unique_ptr<select_db_result> res = std::make_unique<select_db_result>(Parser_Token::select_n_op, "", 0);
 
@@ -113,7 +113,7 @@ std::unique_ptr<op_result> parser::select_db_op()
     }
 }
 
-std::unique_ptr<op_result> parser::get_key_op()
+std::unique_ptr<op_result> Parser::get_key_op()
 {
     std::unique_ptr<get_key_result> res = std::make_unique<get_key_result>(Parser_Token::get_key_op, "", "");
     if (split_result.size() == 2) {
@@ -125,7 +125,7 @@ std::unique_ptr<op_result> parser::get_key_op()
     }
 }
 
-std::unique_ptr<op_result> parser::strlen_op()
+std::unique_ptr<op_result> Parser::strlen_op()
 {
     std::unique_ptr<strlen_result> res = std::make_unique<strlen_result>(Parser_Token::strlen_key, "", "");
     if (split_result.size() == 2) {
@@ -137,7 +137,7 @@ std::unique_ptr<op_result> parser::strlen_op()
     }
 }
 
-std::unique_ptr<op_result> parser::append_key_value_op()
+std::unique_ptr<op_result> Parser::append_key_value_op()
 {
     std::unique_ptr<append_key_value_result> res = std::make_unique<append_key_value_result>(Parser_Token::append_key_value_op,
         "", "", "");
@@ -151,7 +151,7 @@ std::unique_ptr<op_result> parser::append_key_value_op()
     }
 }
 
-std::unique_ptr<op_result> parser::getstrange_op()
+std::unique_ptr<op_result> Parser::getstrange_op()
 {
     std::unique_ptr<getrange_result> res = std::make_unique<getrange_result>(Parser_Token::getrange_key_start_end, "",
         "", 0, 0);
@@ -301,8 +301,7 @@ void select_db_result::setDbN(const int &dbN)
     db_n = dbN;
 }
 
-set_key_value_result::set_key_value_result(int optype, const std::string &result, const std::string &key,
-    const std::string &value)
+set_key_value_result::set_key_value_result(int optype, const std::string &result, const std::string &key, const ERObject &value)
     : op_result(optype, result)
     , key(key)
     , value(value)
@@ -314,7 +313,7 @@ const std::string &set_key_value_result::getKey() const
     return key;
 }
 
-const std::string &set_key_value_result::getValue() const
+const ERObject &set_key_value_result::getValue() const
 {
     return value;
 }
@@ -324,7 +323,7 @@ void set_key_value_result::setKey(const std::string &key)
     set_key_value_result::key = key;
 }
 
-void set_key_value_result::setValue(const std::string &value)
+void set_key_value_result::setValue(const ERObject &value)
 {
     set_key_value_result::value = value;
 }
@@ -434,7 +433,7 @@ void getrange_result::setAnEnd(int32_t anEnd)
  * 1. 将传入的字符串按照” “分割
  * 2. 根据字符串中的双引号判断语法是否正确，双引号用来规定字符串，除此之外出现在任何地方都是语法错误
  * */
-// parser::parser(std::string& input) {
+// Parser::Parser(std::string& input) {
 //     int a = split();
 //     parser_result.get()->setOptype(Parser_Token::syntax_error);
 //     parser_result.get()->setResult(NULL);
@@ -487,7 +486,7 @@ void getrange_result::setAnEnd(int32_t anEnd)
 //     }
 //
 
-Parser_Token parser::split()
+Parser_Token Parser::split()
 {
 
     std::string::size_type npos = -1;
@@ -667,27 +666,29 @@ Parser_Token parser::split()
     }
 }
 
-std::unique_ptr<op_result> parser::syntax_error()
+std::unique_ptr<op_result> Parser::syntax_error()
 {
 
     return std::make_unique<op_result>(Parser_Token::syntax_error, "");
 }
 
-std::unique_ptr<op_result> parser::set_key_value_op()
+std::unique_ptr<op_result> Parser::set_key_value_op()
 {
-    std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::append_key_value_op,
-        "", "", "");
     if (3 == split_result.size()) {
-        res.get()->setKey(split_result[1]);
-        res.get()->setValue(split_result[2]);
+        ERObject object = ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]);
+        std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op, "", split_result[1], ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]));
         return res;
     } else {
-        res.get()->setOptype(Parser_Token::arguments_error);
+        auto start = split_result.begin() + 2;
+        auto end = split_result.end();
+        std::vector<std::string> list_value;
+        list_value.assign(start, end);
+        std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op, "", split_result[1], ERObject(ObjectType::EREDIS_List, (void *)&list_value));
         return res;
     }
 }
 
-std::unique_ptr<op_result> parser::run()
+std::unique_ptr<op_result> Parser::run()
 {
     Parser_Token split_token = split();
     switch (split_token) {
@@ -736,13 +737,15 @@ std::unique_ptr<op_result> parser::run()
     }
 }
 
-parser::~parser()
+Parser::~Parser()
 {
 }
-parser::parser()
+
+Parser::Parser()
 {
 }
-parser::parser(const std::string &input)
+
+Parser::Parser(const std::string &input)
     : input(input)
 {
     //    int a = split();
@@ -751,17 +754,17 @@ parser::parser(const std::string &input)
     //    this->input = input;
 }
 
-void parser::setInput(const std::string &input)
+void Parser::setInput(const std::string &input)
 {
-    parser::input = input;
+    Parser::input = input;
 }
 
-void parser::set_SplitResult_NULL()
+void Parser::set_SplitResult_NULL()
 {
     std::vector<std::string>().swap(split_result);
 }
 
-void parser::split_printf()
+void Parser::split_printf()
 {
     for (int i = 0; i < split_result.size(); ++i) {
         std::cout << split_result[i] << "......" << std::endl;
