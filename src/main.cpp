@@ -1,9 +1,14 @@
 #include "controller.h"
 #include "eredis.hpp"
 #include <iostream>
+#if _WIN32
 #include <winsock.h>
-#include "controller.h"
 #pragma comment(lib, "ws2_32.lib")
+#elif __APPLE__
+// macOS
+#elif __unix__
+// 处理 Linux
+#endif
 void initialization();
 
 void test();
@@ -36,6 +41,7 @@ int main(int argc, char **argv)
     //        /* 响应 */
     //        // cout << /* 一些输出 */;
     //    }
+#if _WIN32
     //定义服务端套接字，接受请求套接字
     SOCKET s_server;
     SOCKET s_accept;
@@ -76,8 +82,6 @@ int main(int argc, char **argv)
             break;
         }
 
-
-
         std::cin >> output;
 
         send_len = send(s_accept, output, 100, 0);
@@ -91,9 +95,11 @@ int main(int argc, char **argv)
     closesocket(s_accept);
     //释放DLL资源
     WSACleanup();
+#endif
     return 0;
 }
 
+#if _WIN32
 void initialization()
 {
     //初始化套接字库
@@ -111,7 +117,7 @@ void initialization()
     }
     //填充服务端地址信息
 }
-
+#endif
 
 void test()
 {
