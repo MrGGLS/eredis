@@ -2,6 +2,23 @@
 // Created by 86136 on 2022/5/9.
 //
 #include "Parser.h"
+#include <unordered_map>
+
+static const std::unordered_map<std::string, Parser_Token> PARSER_MAP = {
+    { "keys", Parser_Token::key_list_op },
+    { "exists", Parser_Token::exists_key_op },
+    { "type", Parser_Token::type_key_op },
+    { "del", Parser_Token::del_key_op },
+    { "dbsize", Parser_Token::dbsize_op },
+    { "flushdb", Parser_Token::flushdb_op },
+    { "flushall", Parser_Token::flushall_op },
+    { "select", Parser_Token::select_n_op },
+    { "set", Parser_Token::set_key_value_op },
+    { "get", Parser_Token::get_key_op },
+    { "strlen", Parser_Token::strlen_key },
+    { "append", Parser_Token::append_key_value_op },
+    { "getrange", Parser_Token::getrange_key_start_end }
+};
 
 //操作对象的返回函数
 std::unique_ptr<op_result> Parser::key_op()
@@ -635,35 +652,37 @@ Parser_Token Parser::split()
         }
     }
 
-    if (split_result[0] == "keys") {
-        return Parser_Token::key_list_op;
-    } else if (split_result[0] == "exists") {
-        return Parser_Token::exists_key_op;
-    } else if (split_result[0] == "type") {
-        return Parser_Token::type_key_op;
-    } else if (split_result[0] == "del") {
-        return Parser_Token::del_key_op;
-    } else if (split_result[0] == "dbsize") {
-        return Parser_Token::dbsize_op;
-    } else if (split_result[0] == "flushdb") {
-        return Parser_Token::flushdb_op;
-    } else if (split_result[0] == "flushall") {
-        return Parser_Token::flushall_op;
-    } else if (split_result[0] == "select") {
-        return Parser_Token::select_n_op;
-    } else if (split_result[0] == "set") {
-        return Parser_Token::set_key_value_op;
-    } else if (split_result[0] == "get") {
-        return Parser_Token::get_key_op;
-    } else if (split_result[0] == "strlen") {
-        return Parser_Token::strlen_key;
-    } else if (split_result[0] == "append") {
-        return Parser_Token::append_key_value_op;
-    } else if (split_result[0] == "getrange") {
-        return Parser_Token::getrange_key_start_end;
-    } else {
-        return Parser_Token::syntax_error;
-    }
+    //    if (split_result[0] == "keys") {
+    //        return Parser_Token::key_list_op;
+    //    } else if (split_result[0] == "exists") {
+    //        return Parser_Token::exists_key_op;
+    //    } else if (split_result[0] == "type") {
+    //        return Parser_Token::type_key_op;
+    //    } else if (split_result[0] == "del") {
+    //        return Parser_Token::del_key_op;
+    //    } else if (split_result[0] == "dbsize") {
+    //        return Parser_Token::dbsize_op;
+    //    } else if (split_result[0] == "flushdb") {
+    //        return Parser_Token::flushdb_op;
+    //    } else if (split_result[0] == "flushall") {
+    //        return Parser_Token::flushall_op;
+    //    } else if (split_result[0] == "select") {
+    //        return Parser_Token::select_n_op;
+    //    } else if (split_result[0] == "set") {
+    //        return Parser_Token::set_key_value_op;
+    //    } else if (split_result[0] == "get") {
+    //        return Parser_Token::get_key_op;
+    //    } else if (split_result[0] == "strlen") {
+    //        return Parser_Token::strlen_key;
+    //    } else if (split_result[0] == "append") {
+    //        return Parser_Token::append_key_value_op;
+    //    } else if (split_result[0] == "getrange") {
+    //        return Parser_Token::getrange_key_start_end;
+    //    } else {
+    //        return Parser_Token::syntax_error;
+    //    }
+    auto pair = PARSER_MAP.find(split_result[0]);
+    return pair == PARSER_MAP.end() ? Parser_Token::syntax_error : pair->second;
 }
 
 std::unique_ptr<op_result> Parser::syntax_error()
