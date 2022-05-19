@@ -69,7 +69,7 @@ std::vector<std::string> ERObject::get_list() const
     return std::get<ERList>(value).list;
 }
 
-void ERObject::set_str(std::string str)
+void ERObject::set_string(std::string str)
 {
     assert(type == ObjectType::EREDIS_STRING);
     this->value = ERString { str };
@@ -111,4 +111,28 @@ void ERObject::set_int(int32_t i32)
 {
     assert(type == ObjectType::EREDIS_INT);
     this->value = ERInt { i32 };
+}
+
+void ERObject::as_string()
+{
+    this->value = ERString();
+    this->type = ObjectType::EREDIS_STRING;
+}
+
+void ERObject::as_list()
+{
+    this->value = ERList();
+    this->type = ObjectType::EREDIS_LIST;
+}
+
+void ERObject::as_int()
+{
+    this->value = ERInt();
+    this->type = ObjectType::EREDIS_INT;
+}
+
+void ERObject::as_double()
+{
+    this->value = ERDouble();
+    this->type = ObjectType::EREDIS_DOUBLE;
 }

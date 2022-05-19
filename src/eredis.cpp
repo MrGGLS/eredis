@@ -203,7 +203,7 @@ std::string ERedisServer::append_value(int db_id, std::string key, std::string s
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) && edb->dict[key].get_type() == ObjectType::EREDIS_STRING) {
-        edb->dict[key].set_str(edb->dict[key].get_str() + str);
+        edb->dict[key].set_string(edb->dict[key].get_str() + str);
         return edb->dict[key].get_str();
     }
     return REDIS_FAIL;
@@ -259,7 +259,9 @@ std::string ERedisServer::lpush(int db_id, std::string key, ERObject erObject)
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
         auto tmp = erObject.get_list();
-        auto new_list = edb->dict[key].get_list();
+        if (edb->dict[key].get_type() != ObjectType::EREDIS_LIST)
+            edb->dict[key].as_list();
+        std::vector<std::string> new_list = edb->dict[key].get_list();
         for (int i = tmp.size() - 1; i >= 0; i--) {
             new_list.insert(new_list.begin(), tmp[i]);
         }
@@ -279,6 +281,8 @@ std::string ERedisServer::rpush(int db_id, std::string key, ERObject erObject)
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
         auto tmp = erObject.get_list();
+        if (edb->dict[key].get_type() != ObjectType::EREDIS_LIST)
+            edb->dict[key].as_list();
         auto new_list = edb->dict[key].get_list();
         new_list.insert(new_list.end(), tmp.begin(), tmp.end());
         edb->dict[key].set_list(new_list);

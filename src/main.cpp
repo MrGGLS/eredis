@@ -137,10 +137,14 @@ void testSave()
     std::cout << server.get_key(0, "k1") << std::endl;
     std::cout << server.get_key_type(0, "k2") << std::endl;
     std::cout << server.get_key(0, "k2") << std::endl;
-    //    testList(server);
-    //    testExpire(server);
-    //    testServer(server);
-    //    testInt_Double(server);
+    testList(server);
+    save_data(&server);
+    testExpire(server);
+    save_data(&server);
+    testServer(server);
+    save_data(&server);
+    testInt_Double(server);
+    save_data(&server);
 }
 
 void testInt_Double(ERedisServer &server)
@@ -237,7 +241,7 @@ void testExpire(ERedisServer &server)
         std::cout << server.ttl(0, "k1") << std::endl;
     }
     /* test change expire */
-    object.set_str("I'm Mr.GGLS!");
+    object.set_string("I'm Mr.GGLS!");
     std::cout << server.set_key(0, "k2", object) << std::endl;
     std::cout << "before set expire................" << std::endl;
     std::cout << server.ttl(0, "k2") << std::endl;

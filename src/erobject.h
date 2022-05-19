@@ -61,10 +61,14 @@ public:
     std::vector<std::string> get_list() const;
     int32_t get_int() const;
     double get_double() const;
-    void set_str(std::string str);
+    void set_string(std::string str);
     void set_list(std::vector<std::string> list);
     void set_int(int32_t i32);
     void set_double(double f64);
+    void as_string();
+    void as_list();
+    void as_int();
+    void as_double();
 };
 
 #endif //__EROBJECT_H__
