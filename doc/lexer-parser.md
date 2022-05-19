@@ -16,6 +16,9 @@
 6. `flushdb`: 清空当前数据库
 7. `flushall`: 清空所有数据库
 8. `select [n]`: 进入第n个数据库(总共16个)
+9. `expire [key] [time]`: 给key添加过期时间，单位s
+10. `setex [key] [time] [v]`: 在设置key的同时添加过期时间，单位s
+11. `ttl [key]`: 检查key还有多少秒过期
 
 ### 类型
 
@@ -34,7 +37,7 @@
 1. `lpush/rpush [k] [v1] [v2] ...`：在k的左边或右边插入数据
 2. `lrange [k] [start] [end]`：获取指定范围内的数据（0 代表左边第一个，-1 代表右边第一个）
 3. `lpop/rpop [k]`：从左边/右边取出数据，取完所有数据后键消失
-4. `lindex [k] [v]`：按照索引下标获得元素
+4. `lindex [k] [index]`：按照索引获得元素
 5. `llen [k]`：获得列表长度
 6. `lset [k] [index] [v]`：将对应下标元素替换为v
 

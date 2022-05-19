@@ -18,6 +18,8 @@
 #define EOF 0b10100110 /* use binary */
 #define CHECK_SUM_MAX 0xffffffffffffffff
 #define CHECK_SUM_LEN 8
+#define EREDIS_INT_LEN 4
+#define EREDIS_DOUBLE_LEN 8
 #define CHECK_SUM 1
 #define DICT 2
 /* key expire time */

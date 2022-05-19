@@ -10,10 +10,10 @@
 #include <ctime>
 #include <string>
 #include <thread>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 //#include "iostream"
-
 
 /*error codes*/
 #define REDIS_OK "OK"
@@ -95,8 +95,11 @@ struct ERedisServer {
     std::string erdb_filename; /* Name of ERDB file */
     int erdb_compression; /* Use compression in ERDB? */
     int erdb_checksum; /* Use ERDB checksum? */
+    /* use lock for key and clients */
+    std::mutex* key_mtx;
+    std::mutex* cli_mtx;
 
-    /* kv operations */
+    /* common operations */
     std::string get_all_keys(int db_id);
     std::string exists_key(int db_id, std::string key);
     std::string get_key_type(int db_id, std::string key);
@@ -105,14 +108,29 @@ struct ERedisServer {
     std::string flushdb(int db_id);
     std::string flushall();
     std::string select_db(int db_id, int client_id); /* need to know who is using the db */
+    std::string set_expire(int db_id, std::string key, int secs);
+    std::string ttl(int db_id, std::string key);
+        /* string operations */
     std::string set_key(int db_id, std::string key, ERObject erObject);
+    std::string setex(int db_id, std::string key, int secs, ERObject erObject);
     std::string get_key(int db_id, std::string key);
     std::string get_strlen(int db_id, std::string key);
     std::string append_value(int db_id, std::string key, std::string str);
     std::string getrange(int db_id, std::string key, int start, int end);
-
+    std::string incr(int db_id, std::string key);
+    std::string decr(int db_id, std::string key);
+    /* list operations */
+    std::string lpush(int db_id, std::string key, ERObject erObject);
+    std::string rpush(int db_id, std::string key, ERObject erObject);
+    std::string lrange(int db_id, std::string key, int start, int end);
+    std::string lpop(int db_id, std::string key);
+    std::string rpop(int db_id, std::string key);
+    std::string lindex(int db_id, std::string key, int index);
+    std::string llen(int db_id, std::string key);
+    std::string lset(int db_id, std::string key, int index, std::string value);
     ERedisServer(std::vector<ERedisDb *> _db, int db_num);
     ERedisServer(int db_num = EREDIS_DEFAULT_DB_NUM);
+    ~ERedisServer();
 };
 
 /* check key's validity, delete all invalid keys per interval milliseconds */

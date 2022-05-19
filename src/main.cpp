@@ -11,8 +11,10 @@
 //// 处理 Linux
 //#endif
 void initialization();
-
+void testList(ERedisServer& server);
+void testExpire(ERedisServer& server);
 void testServer(ERedisServer& server);
+void testInt_Double(ERedisServer& server);
 void testSave();
 int main(int argc, char **argv)
 {
@@ -123,12 +125,129 @@ int main(int argc, char **argv)
 
 void testSave(){
     auto server = ERedisServer();
-    testServer(server);
-    save_data(&server);
-    server = ERedisServer();
+//    testList(server);
+//    testExpire(server);
+//    testServer(server);
+//    testInt_Double(server);
+//    save_data(&server);
+//    server = ERedisServer();
     load_data(&server);
     std::cout<<"-------------load data---------------"<<std::endl;
-    testServer(server);
+    std::cout<<server.get_key_type(0,"k1")<<std::endl;
+    std::cout<<server.get_key(0,"k1")<<std::endl;
+    std::cout<<server.get_key_type(0,"k2")<<std::endl;
+    std::cout<<server.get_key(0,"k2")<<std::endl;
+//    testList(server);
+//    testExpire(server);
+//    testServer(server);
+//    testInt_Double(server);
+}
+
+void testInt_Double(ERedisServer& server){
+    auto value1 = 123;
+    auto value2 = 123.123;
+    ERObject o1 = ERObject(ObjectType::EREDIS_INT,(void *)&value1);
+    ERObject o2 = ERObject(ObjectType::EREDIS_DOUBLE,(void *)&value2);
+    std::cout<<"test integer"<<std::endl;
+    std::cout<<server.set_key(0,"k1",o1)<<std::endl;
+    std::cout<<server.get_key_type(0,"k1")<<std::endl;
+    std::cout<<server.get_key(0,"k1")<<std::endl;
+    /* incr/decr */
+    std::cout<<server.incr(0,"k1")<<std::endl;
+    std::cout<<server.decr(0,"k1")<<std::endl;
+    std::cout<<"test double"<<std::endl;
+    std::cout<<server.set_key(0,"k2",o2)<<std::endl;
+    std::cout<<server.get_key_type(0,"k2")<<std::endl;
+    std::cout<<server.get_key(0,"k2")<<std::endl;
+    std::cout<<server.incr(0,"k2")<<std::endl;
+    std::cout<<server.decr(0,"k2")<<std::endl;
+}
+
+void testList(ERedisServer& server){
+    auto value1 = new std::vector<std::string>{"hehe","haha","Mr.GGLS!"};
+    auto value2 = new std::vector<std::string>{"wanqian","heihei","I'm Mr.GGLS!"};
+    ERObject object1 = ERObject(ObjectType::EREDIS_LIST,(void *) value1);
+    ERObject object2 = ERObject(ObjectType::EREDIS_LIST,(void *) value2);
+    /* test set key */
+    std::cout<<"test lpush "<<std::endl;
+    std::cout<<server.lpush(0,"k1",object1)<<std::endl;
+    std::cout<<server.lpush(0,"k1",object2)<<std::endl;
+    std::cout<<server.rpush(0,"k2",object1)<<std::endl;
+    std::cout<<server.rpush(0,"k2",object2)<<std::endl;
+    /* test get range */
+    std::cout<<"test lrange "<<std::endl;
+    std::cout<<server.lrange(0,"k1",2,4)<<std::endl;
+    std::cout<<server.lrange(0,"k1",2,100)<<std::endl;
+    std::cout<<server.lrange(0,"k1",0,-1)<<std::endl;
+    /* test lpop/rpop */
+    std::cout<<"test lpop"<<std::endl;
+    std::cout<<server.lpop(0,"k1")<<std::endl;
+    std::cout<<server.lrange(0,"k1",0,-1)<<std::endl;
+    std::cout<<server.lpop(0,"k1")<<std::endl;
+    std::cout<<server.lrange(0,"k1",0,-1)<<std::endl;
+    std::cout<<server.lpop(0,"k1")<<std::endl;
+    std::cout<<server.lpop(0,"k1")<<std::endl;
+    std::cout<<server.lpop(0,"k1")<<std::endl;
+    std::cout<<server.lpop(0,"k1")<<std::endl;
+    std::cout<<server.lpop(0,"k1")<<std::endl;
+    std::cout<<server.lpop(0,"k1")<<std::endl;
+    std::cout<<server.lpop(0,"k1")<<std::endl;
+    std::cout<<"test rpop"<<std::endl;
+    std::cout<<server.rpop(0,"k2")<<std::endl;
+    std::cout<<server.lrange(0,"k2",0,-1)<<std::endl;
+    std::cout<<server.rpop(0,"k2")<<std::endl;
+    std::cout<<server.lrange(0,"k2",0,-1)<<std::endl;
+    std::cout<<server.rpop(0,"k2")<<std::endl;
+    std::cout<<server.rpop(0,"k2")<<std::endl;
+    std::cout<<server.rpop(0,"k2")<<std::endl;
+    std::cout<<server.rpop(0,"k2")<<std::endl;
+    std::cout<<server.rpop(0,"k2")<<std::endl;
+    std::cout<<server.rpop(0,"k2")<<std::endl;
+    std::cout<<server.rpop(0,"k2")<<std::endl;
+    /* test llen */
+    std::cout<<"test llen "<<std::endl;
+    std::cout<<server.lpush(0,"k1",object1)<<std::endl;
+    std::cout<<server.lpush(0,"k1",object2)<<std::endl;
+    std::cout<<server.rpush(0,"k2",object1)<<std::endl;
+    std::cout<<server.rpush(0,"k2",object2)<<std::endl;
+    std::cout<<server.llen(0,"k1")<<std::endl;
+    /* test lset */
+    std::cout<<"test lset "<<std::endl;
+    std::cout<<server.lset(0,"k1",1,"GGLS")<<std::endl;
+    std::cout<<server.lrange(0,"k1",0,3)<<std::endl;
+    std::cout<<server.lset(0,"k1",1,"Mr.GGLS")<<std::endl;
+    std::cout<<server.lrange(0,"k1",0,3)<<std::endl;
+}
+
+void testExpire(ERedisServer& server){
+    std::string* value = new std::string ("hehe");
+    ERObject object = ERObject(ObjectType::EREDIS_STRING,(void *) value);
+    //    std::cout<<object.get_str()<<std::endl;
+    /* test set key */
+    std::cout<<"test set expired key"<<std::endl;
+    std::cout<<server.setex(0,"k1",5,object)<<std::endl;
+    /* test get expired key */
+    for(int i=0;i<5;i++){
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::cout<<"test get expired key"<<std::endl;
+        std::cout<<server.get_key(0,"k1")<<std::endl;
+        std::cout<<server.ttl(0,"k1")<<std::endl;
+    }
+    /* test change expire */
+    object.set_str("I'm Mr.GGLS!");
+    std::cout<<server.set_key(0,"k2",object)<<std::endl;
+    std::cout<<"before set expire................"<<std::endl;
+    std::cout<<server.ttl(0,"k2")<<std::endl;
+    std::cout<<server.set_expire(0,"k2",8)<<std::endl;
+    std::cout<<"after set expire................"<<std::endl;
+    std::cout<<server.ttl(0,"k2")<<std::endl;
+    for(int i=0;i<5;i++){
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::cout<<"test get expired key"<<std::endl;
+        std::cout<<server.get_key(0,"k2")<<std::endl;
+        std::cout<<server.ttl(0,"k2")<<std::endl;
+    }
+    std::cout<<"-------end of test-------"<<std::endl;
 }
 
 void testServer(ERedisServer& server){

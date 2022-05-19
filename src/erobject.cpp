@@ -12,6 +12,16 @@ ERObject::ERObject(ObjectType type, void *value)
     : type(type)
 {
     switch (type) {
+    case ObjectType::EREDIS_INT: {
+        int32_t i32 = *static_cast<int32_t *>(value);
+        this->value = ERInt { i32 };
+        break;
+    }
+    case ObjectType::EREDIS_DOUBLE: {
+        double f64 = *static_cast<double *>(value);
+        this->value = ERDouble { f64 };
+        break;
+    }
     case ObjectType::EREDIS_STRING: {
         std::string str = *static_cast<std::string *>(value);
         this->value = ERString { str };
