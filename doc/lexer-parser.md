@@ -26,8 +26,8 @@
 3. `strlen [key]`：获取 value 长度
 4. `append [key] [value]`：在原来 value 的基础上追加子串，返回总的字符串长度
 5. `getrange [key] [start] [end]`: 获取 value[start..end]
-6. `inr key`: value 的值 +1
-7. `dcr key`: value 的值 -1
+6. `incr [key]`: value 的值 +1
+7. `decr [key]`: value 的值 -1
 
 #### List
 

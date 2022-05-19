@@ -69,7 +69,7 @@ std::string ERedisServer::get_key_type(int db_id, std::string key)
         case ObjectType::EREDIS_STRING: {
             return "eredis string";
         }
-        case ObjectType::EREDIS_List: {
+        case ObjectType::EREDIS_LIST: {
             return "eredis list";
         }
         default:

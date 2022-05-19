@@ -54,7 +54,7 @@ bool save_data(ERedisServer *server, std::string base_path)
                 writer.write(kv.second.get_str().c_str(), str_len);
                 break;
             }
-            case ObjectType::EREDIS_List: {
+            case ObjectType::EREDIS_LIST: {
                 data_type = EREDIS_ERDB_TYPE_LIST;
                 writer.write((char *)&data_type, sizeof(data_type));
                 auto list = kv.second.get_list();
@@ -200,7 +200,7 @@ bool load_data(ERedisServer *server, std::string base_path)
                     tmp[str_len] = '\0';
                     list->push_back(std::string(tmp));
                 }
-                auto value = ERObject(ObjectType::EREDIS_List, &list);
+                auto value = ERObject(ObjectType::EREDIS_LIST, &list);
                 edb->dict.insert({ key, value });
                 break;
             }
