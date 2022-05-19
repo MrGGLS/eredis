@@ -26,6 +26,7 @@ ERedisServer::ERedisServer(int db_num)
     this->key_mtx = new std::mutex();
     this->cli_mtx = new std::mutex();
 }
+
 ERedisServer::~ERedisServer()
 {
     delete key_mtx;
@@ -201,23 +202,25 @@ std::string ERedisServer::append_value(int db_id, std::string key, std::string s
     if (edb->expires.count(key) && edb->expires[key] < time(0))
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
-    if (edb->dict.count(key)&&edb->dict[key].get_type()==ObjectType::EREDIS_STRING) {
+    if (edb->dict.count(key) && edb->dict[key].get_type() == ObjectType::EREDIS_STRING) {
         edb->dict[key].set_str(edb->dict[key].get_str() + str);
         return edb->dict[key].get_str();
     }
     return REDIS_FAIL;
 }
+
 /* the interval includes start and end! */
 std::string ERedisServer::getrange(int db_id, std::string key, int32_t start, int32_t end)
 {
     ERedisDb *edb = this->db[db_id];
     if (edb->expires.count(key) && edb->expires[key] < time(0))
         del_key(db_id, key);
-    if (edb->dict.count(key)&&edb->dict[key].get_type()==ObjectType::EREDIS_STRING) {
+    if (edb->dict.count(key) && edb->dict[key].get_type() == ObjectType::EREDIS_STRING) {
         return edb->dict[key].get_str().substr(start, end - start + 1);
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::incr(int db_id, std::string key)
 {
     ERedisDb *edb = this->db[db_id];
@@ -232,6 +235,7 @@ std::string ERedisServer::incr(int db_id, std::string key)
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::decr(int db_id, std::string key)
 {
     ERedisDb *edb = this->db[db_id];
@@ -246,6 +250,7 @@ std::string ERedisServer::decr(int db_id, std::string key)
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::lpush(int db_id, std::string key, ERObject erObject)
 {
     ERedisDb *edb = this->db[db_id];
@@ -307,6 +312,7 @@ std::string ERedisServer::lrange(int db_id, std::string key, int start, int end)
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::lpop(int db_id, std::string key)
 {
     ERedisDb *edb = this->db[db_id];
@@ -326,6 +332,7 @@ std::string ERedisServer::lpop(int db_id, std::string key)
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::rpop(int db_id, std::string key)
 {
     ERedisDb *edb = this->db[db_id];
@@ -345,6 +352,7 @@ std::string ERedisServer::rpop(int db_id, std::string key)
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::lindex(int db_id, std::string key, int index)
 {
     ERedisDb *edb = this->db[db_id];
@@ -361,6 +369,7 @@ std::string ERedisServer::lindex(int db_id, std::string key, int index)
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::llen(int db_id, std::string key)
 {
     ERedisDb *edb = this->db[db_id];
@@ -372,6 +381,7 @@ std::string ERedisServer::llen(int db_id, std::string key)
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::lset(int db_id, std::string key, int index, std::string value)
 {
     ERedisDb *edb = this->db[db_id];
@@ -391,6 +401,7 @@ std::string ERedisServer::lset(int db_id, std::string key, int index, std::strin
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::set_expire(int db_id, std::string key, int secs)
 {
     ERedisDb *edb = this->db[db_id];
@@ -403,6 +414,7 @@ std::string ERedisServer::set_expire(int db_id, std::string key, int secs)
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::ttl(int db_id, std::string key)
 {
     ERedisDb *edb = this->db[db_id];
@@ -417,6 +429,7 @@ std::string ERedisServer::ttl(int db_id, std::string key)
     }
     return REDIS_FAIL;
 }
+
 std::string ERedisServer::setex(int db_id, std::string key, int secs, ERObject erObject)
 {
     ERedisDb *edb = this->db[db_id];

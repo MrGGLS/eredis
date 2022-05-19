@@ -8,9 +8,9 @@
 #include "erobject.h"
 #include <chrono>
 #include <ctime>
+#include <mutex>
 #include <string>
 #include <thread>
-#include <mutex>
 #include <unordered_map>
 #include <vector>
 //#include "iostream"
@@ -27,7 +27,7 @@
 #define EREDIS_DEFAULT_DB_NUM 16 // default db num
 #define EREDIS_DEFAULT_DEL_INTERVAL 1000 // default check keys validity interval
 #define EREDIS_DEFAULT_DEL_CLIENT_INTERVAL 1000 // default check client's validity interval
-#define EREDIS_DEFAULT_CLIENT_TIMEOUT (5*60) // client max idle time
+#define EREDIS_DEFAULT_CLIENT_TIMEOUT (5 * 60) // client max idle time
 
 struct ERedisDb {
     ERedisDb(int id);
@@ -51,10 +51,10 @@ struct ERedisClient {
     int client_id; /* client unique identity */
     int db_id = EREDIS_DEFAULT_DB_ID; /* which db the client is using */
 
-    time_t c_time;/* client created time */
-    time_t last_interaction;/* last interaction with server, for clear use */
+    time_t c_time; /* client created time */
+    time_t last_interaction; /* last interaction with server, for clear use */
 
-    std::string client_name;/* can be null */
+    std::string client_name; /* can be null */
 
     std::string hostname;
     int port;
@@ -83,7 +83,7 @@ struct ERedisServer {
 
     /* RedisClient *current_client;  Current client  */
     //    std::vector<ERedisClient *> clients;
-    std::unordered_map<int,ERedisClient*> clients;/* pair: (cliend_id,client) */
+    std::unordered_map<int, ERedisClient *> clients; /* pair: (cliend_id,client) */
     /* Fields used only for stats */
     // 服务器启动时间
     time_t start_time; /* Server start time */
@@ -96,8 +96,8 @@ struct ERedisServer {
     int erdb_compression; /* Use compression in ERDB? */
     int erdb_checksum; /* Use ERDB checksum? */
     /* use lock for key and clients */
-    std::mutex* key_mtx;
-    std::mutex* cli_mtx;
+    std::mutex *key_mtx;
+    std::mutex *cli_mtx;
 
     /* common operations */
     std::string get_all_keys(int db_id);
@@ -110,7 +110,7 @@ struct ERedisServer {
     std::string select_db(int db_id, int client_id); /* need to know who is using the db */
     std::string set_expire(int db_id, std::string key, int secs);
     std::string ttl(int db_id, std::string key);
-        /* string operations */
+    /* string operations */
     std::string set_key(int db_id, std::string key, ERObject erObject);
     std::string setex(int db_id, std::string key, int secs, ERObject erObject);
     std::string get_key(int db_id, std::string key);

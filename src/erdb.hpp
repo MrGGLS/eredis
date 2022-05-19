@@ -15,7 +15,7 @@
 /* file name */
 #define ERDB_FILENAME "dump.erdb"
 /* identifiers */
-#define EOF 0b10100110 /* use binary */
+#define EREDIS_EOF 0b10100110 /* use binary */
 #define CHECK_SUM_MAX 0xffffffffffffffff
 #define CHECK_SUM_LEN 8
 #define EREDIS_INT_LEN 4

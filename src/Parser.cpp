@@ -695,14 +695,22 @@ std::unique_ptr<op_result> Parser::set_key_value_op()
 {
     if (3 == split_result.size()) {
         ERObject object = ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]);
-        std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op, "", split_result[1], ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]));
+        std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(
+            Parser_Token::set_key_value_op,
+            "",
+            split_result[1],
+            ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]));
         return res;
     } else {
         auto start = split_result.begin() + 2;
         auto end = split_result.end();
         std::vector<std::string> list_value;
         list_value.assign(start, end);
-        std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op, "", split_result[1], ERObject(ObjectType::EREDIS_LIST, (void *)&list_value));
+        std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(
+            Parser_Token::set_key_value_op,
+            "",
+            split_result[1],
+            ERObject(ObjectType::EREDIS_LIST, (void *)&list_value));
         return res;
     }
 }

@@ -1,8 +1,8 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
-#include "eredis.hpp"
 #include "Parser.h"
+#include "eredis.hpp"
 #include <string>
 class Controller {
 private:

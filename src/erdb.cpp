@@ -6,7 +6,7 @@
 bool save_data(ERedisServer *server, std::string base_path)
 {
     std::lock_guard<std::mutex> lg(*(server->key_mtx));
-    std::fstream writer(base_path + ERDB_FILENAME, std::ios::trunc|std::ios::out|std::ios::in | std::ios::binary);
+    std::fstream writer(base_path + ERDB_FILENAME, std::ios::trunc | std::ios::out | std::ios::in | std::ios::binary);
     if (writer.bad())
         return false;
     /* header of file */
@@ -44,18 +44,18 @@ bool save_data(ERedisServer *server, std::string base_path)
             writer.write(kv.first.c_str(), str_len);
             /* save value */
             switch (kv.second.get_type()) {
-            case ObjectType::EREDIS_INT:{
+            case ObjectType::EREDIS_INT: {
                 data_type = EREDIS_ERDB_TYPE_INT;
                 writer.write((char *)&data_type, sizeof(data_type));
                 auto num = kv.second.get_int();
-                writer.write((char*)&num, sizeof(num));
+                writer.write((char *)&num, sizeof(num));
                 break;
             }
-            case ObjectType::EREDIS_DOUBLE:{
+            case ObjectType::EREDIS_DOUBLE: {
                 data_type = EREDIS_ERDB_TYPE_DOUBLE;
                 writer.write((char *)&data_type, sizeof(data_type));
                 auto num = kv.second.get_double();
-                writer.write((char*)&num, sizeof(num));
+                writer.write((char *)&num, sizeof(num));
                 break;
             }
             case ObjectType::EREDIS_STRING: {
@@ -92,13 +92,13 @@ bool save_data(ERedisServer *server, std::string base_path)
         }
     }
     /* write eof */
-    uint8_t eof = EOF;
+    uint8_t eof = EREDIS_EOF;
     writer.write((char *)&eof, sizeof(eof));
     /* count checksum */
     int len = writer.tellg();
     char buffer[len];
     writer.seekg(0);
-    writer.read(buffer,len);
+    writer.read(buffer, len);
     auto check_sum = cal_checksum(buffer, len);
     /* write checksum */
     writer.write((char *)&check_sum, CHECK_SUM_LEN);
@@ -168,12 +168,12 @@ bool load_data(ERedisServer *server, std::string base_path)
         int str_len;
         int list_len;
         uint8_t data_type;
-        bool is_delete=false;
+        bool is_delete = false;
         for (int j = 0; j < edb_size; j++) {
             reader.read((char *)&expire_ms, sizeof(expire_ms));
             /* now we should consider key's validity */
             if (expire_ms != -1 && expire_ms < time(0)) {
-                is_delete=true;
+                is_delete = true;
             }
             /* read key */
             reader.read((char *)&str_len, 4);
@@ -185,16 +185,16 @@ bool load_data(ERedisServer *server, std::string base_path)
             /* read value type */
             reader.read((char *)&data_type, 1);
             switch (data_type) {
-            case EREDIS_ERDB_TYPE_INT:{
+            case EREDIS_ERDB_TYPE_INT: {
                 int32_t num;
-                reader.read((char*)&num,EREDIS_INT_LEN);
+                reader.read((char *)&num, EREDIS_INT_LEN);
                 auto value = ERObject(ObjectType::EREDIS_INT, new int32_t(num));
                 edb->dict.insert({ key, value });
                 break;
             }
-            case EREDIS_ERDB_TYPE_DOUBLE:{
+            case EREDIS_ERDB_TYPE_DOUBLE: {
                 double num;
-                reader.read((char*)&num,EREDIS_DOUBLE_LEN);
+                reader.read((char *)&num, EREDIS_DOUBLE_LEN);
                 auto value = ERObject(ObjectType::EREDIS_DOUBLE, new double(num));
                 edb->dict.insert({ key, value });
                 break;
@@ -228,9 +228,9 @@ bool load_data(ERedisServer *server, std::string base_path)
                 break;
             }
             }
-            if(is_delete){
+            if (is_delete) {
                 edb->dict.erase(key);
-                is_delete=true;
+                is_delete = true;
             }
         }
         server->db.push_back(edb);

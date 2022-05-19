@@ -7,8 +7,8 @@
 
 enum class ObjectType {
     EREDIS_UNKNOWN = 0,
-    EREDIS_STRING = 1,
-    EREDIS_LIST = 2,
+    EREDIS_STRING,
+    EREDIS_LIST,
     EREDIS_INT,
     EREDIS_DOUBLE
 };
@@ -21,7 +21,6 @@ struct ERString {
 };
 
 struct ERList {
-    // TODO: head pointer of list
     std::vector<std::string> list;
 };
 
