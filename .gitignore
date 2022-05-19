@@ -42,6 +42,7 @@ target/
 cmake-build-debug/
 cmake-build-release/
 .cache/
+cmake-build-debug-system/
 
 # VS Code info
 .vscode/
