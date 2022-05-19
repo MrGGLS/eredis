@@ -26,10 +26,21 @@
 3. `strlen [key]`：获取 value 长度
 4. `append [key] [value]`：在原来 value 的基础上追加子串，返回总的字符串长度
 5. `getrange [key] [start] [end]`: 获取 value[start..end]
+6. `inr key`: value 的值 +1
+7. `dcr key`: value 的值 -1
 
 #### List
-#### Set
-#### Hash
+
+1. `lpush/rpush [k] [v1] [v2] ...`：在k的左边或右边插入数据
+2. `lrange [k] [start] [end]`：获取指定范围内的数据（0 代表左边第一个，-1 代表右边第一个）
+3. `lpop/rpop [k]`：从左边/右边取出数据，取完所有数据后键消失
+4. `lindex [k] [v]`：按照索引下标获得元素
+5. `llen [k]`：获得列表长度
+6. `lset [k] [index] [v]`：将对应下标元素替换为v
+
+[//]: # (#### Set)
+
+[//]: # (#### Hash)
 
 ### 数据保存
 

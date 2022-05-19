@@ -5,11 +5,13 @@
 #ifndef EASY_REDIS_ERDB_HPP
 #define EASY_REDIS_ERDB_HPP
 #include "eredis.hpp"
-#include <iostream>
 #include <fstream>
+#include <iostream>
 /* meta data */
 #define DBNAME "EREDIS" /* 6 bytes for db name */
 #define EREDIS_VERSION "0001" /* four bytes for db version representation */
+#define DBNAME_LEN 6
+#define VERSION_LEN 4
 /* file name */
 #define ERDB_FILENAME "dump.erdb"
 /* identifiers */
@@ -28,12 +30,12 @@
 #define EREDIS_ERDB_TYPE_UNKOWN 99
 
 /* 爱用不用嘛 */
-bool save_data(ERedisServer* server, std::string base_path="./");
+bool save_data(ERedisServer *server, std::string base_path = "./");
 
 /* you should use it when init server */
-bool load_data(ERedisServer* server, std::string base_path="./");
+bool load_data(ERedisServer *server, std::string base_path = "./");
 
 /* checksum operations */
-uint64_t cal_checksum(char* data, int len);
+uint64_t cal_checksum(char *data, int len);
 bool is_legal_data(uint64_t source_checksum, uint64_t cur_checksum);
 #endif // EASY_REDIS_ERDB_HPP

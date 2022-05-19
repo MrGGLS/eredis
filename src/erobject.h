@@ -8,7 +8,9 @@
 enum class ObjectType {
     EREDIS_UNKNOWN = 0,
     EREDIS_STRING = 1,
-    EREDIS_List = 2,
+    EREDIS_LIST = 2,
+    EREDIS_INT,
+    EREDIS_DOUBLE
 };
 
 struct ERUnknown {
@@ -21,6 +23,14 @@ struct ERString {
 struct ERList {
     // TODO: head pointer of list
     std::vector<std::string> list;
+};
+
+struct ERInt {
+    int32_t num;
+};
+
+struct ERDouble {
+    double num;
 };
 // ... 其他类型
 
@@ -37,7 +47,7 @@ struct ERList {
 class ERObject {
 private:
     ObjectType type;
-    std::variant<ERUnknown, ERString, ERList> value;
+    std::variant<ERUnknown, ERString, ERList, ERInt, ERDouble> value;
 
 public:
     explicit ERObject(ObjectType type, void *value);
@@ -46,10 +56,16 @@ public:
     bool is_unknown();
     bool is_string();
     bool is_list();
+    bool is_int();
+    bool is_double();
     std::string get_str() const;
     std::vector<std::string> get_list() const;
+    int32_t get_int() const;
+    double get_double() const;
     void set_str(std::string str);
     void set_list(std::vector<std::string> list);
+    void set_int(int32_t i32);
+    void set_double(double f64);
 };
 
 #endif //__EROBJECT_H__

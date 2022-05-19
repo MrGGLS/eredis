@@ -128,7 +128,6 @@ std::string ERedisServer::set_key(int db_id, std::string key, ERObject erObject)
 {
     ERedisDb *edb = this->db[db_id];
     edb->dict[key] = erObject;
-    //    edb.dict[key]=erObject;
     return REDIS_OK;
 }
 
@@ -196,9 +195,9 @@ std::string ERedisServer::getrange(int db_id, std::string key, int32_t start, in
 
 [[noreturn]] void clear_idle_clients(ERedisServer *server)
 {
-    while(true){
-        for (const auto &kv: server->clients){
-            if(time(0)-kv.second->last_interaction>=EREDIS_DEFAULT_CLIENT_TIMEOUT){
+    while (true) {
+        for (const auto &kv : server->clients) {
+            if (time(0) - kv.second->last_interaction >= EREDIS_DEFAULT_CLIENT_TIMEOUT) {
                 server->clients.erase(kv.first);
             }
         }

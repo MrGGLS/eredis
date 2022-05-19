@@ -17,7 +17,7 @@ ERObject::ERObject(ObjectType type, void *value)
         this->value = ERString { str };
         break;
     }
-    case ObjectType::EREDIS_List: {
+    case ObjectType::EREDIS_LIST: {
         std::vector<std::string> list = *static_cast<std::vector<std::string> *>(value);
         this->value = ERList { list };
         break;
@@ -34,7 +34,7 @@ ObjectType ERObject::get_type() const
 
 bool ERObject::is_list()
 {
-    return type == ObjectType::EREDIS_List;
+    return type == ObjectType::EREDIS_LIST;
 }
 
 bool ERObject::is_string()
@@ -55,7 +55,7 @@ std::string ERObject::get_str() const
 
 std::vector<std::string> ERObject::get_list() const
 {
-    assert(type == ObjectType::EREDIS_List);
+    assert(type == ObjectType::EREDIS_LIST);
     return std::get<ERList>(value).list;
 }
 
@@ -67,6 +67,38 @@ void ERObject::set_str(std::string str)
 
 void ERObject::set_list(std::vector<std::string> list)
 {
-    assert(type == ObjectType::EREDIS_List);
+    assert(type == ObjectType::EREDIS_LIST);
     this->value = ERList { list };
+}
+bool ERObject::is_int()
+{
+    return type == ObjectType::EREDIS_INT;
+}
+bool ERObject::is_double()
+{
+    return type == ObjectType::EREDIS_DOUBLE;
+}
+
+int32_t ERObject::get_int() const
+{
+    assert(type == ObjectType::EREDIS_INT);
+    return std::get<ERInt>(value).num;
+}
+
+double ERObject::get_double() const
+{
+    assert(type == ObjectType::EREDIS_DOUBLE);
+    return std::get<ERDouble>(value).num;
+}
+
+void ERObject::set_double(double f64)
+{
+    assert(type == ObjectType::EREDIS_DOUBLE);
+    this->value = ERDouble { f64 };
+}
+
+void ERObject::set_int(int32_t i32)
+{
+    assert(type == ObjectType::EREDIS_INT);
+    this->value = ERInt { i32 };
 }
