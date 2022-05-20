@@ -2,7 +2,10 @@
 #include "erdb.hpp"
 #include "eredis.hpp"
 #include "utils.hpp"
+#include <fstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -25,8 +28,24 @@ void testInt_Double(ERedisServer &server);
 void testSave();
 [[noreturn]] void event_loop();
 
+void logo() {
+    std::cout << "\n";
+    std::ifstream fs;
+    std::string pwd;
+    fs.open("/Users/mrzleo/easy-redis/logo.txt");
+    std::string s;
+    while (std::getline(fs, s)) {
+        std::cout << s << std::endl;
+    }
+    std::cout << "\n";
+    std::cout << "<host>: 127.0.0.1\n"
+              << "<port>: " << SERVER_PORT
+              << std::endl;
+}
+
 int main(int argc, char **argv)
 {
+    /* logo(); */
     event_loop();
 }
 
@@ -95,7 +114,7 @@ void event_loop()
 #endif
 
         if (client_num < 0) {
-            std::cerr << "[ERROR] client num < 0\n";
+            log_err("client num < 0\n");
         }
 
         // check all socket
@@ -108,7 +127,7 @@ void event_loop()
             struct kevent event = events[i];
             SOCKET sock = event.flags & EV_ERROR ? -1 : event.ident;
             if (sock == -1) {
-                std::cerr << "[ERROR] sock == -1\n";
+                log_err("sock == -1\n");
                 continue;
             }
 #endif
@@ -150,18 +169,23 @@ void event_loop()
 #endif
 
                     if (getnameinfo((sockaddr *)&client_addr, addr_len, host, NI_MAXHOST, port, NI_MAXSERV, 0) == 0) {
-                        std::cout << "connect to client <host>: " << host << " <port>: " << port << std::endl;
+                        std::stringstream ss;
+                        ss << "connect to client <host>: " << host << " <port>: " << port << std::endl;
+                        log_system(ss.str());
+
                     } else {
                         inet_ntop(AF_INET, &client_addr.sin_addr, host, NI_MAXHOST);
-                        std::cout << "connect to client <host>: " << host << " <port>: " << ntohs(client_addr.sin_port)
-                                  << std::endl;
+                        std::stringstream ss;
+                        ss << "connect to client <host>: " << host << " <port>: " << ntohs(client_addr.sin_port)
+                           << std::endl;
+                        log_system(ss.str());
                     }
                     new_eclient->hostname = std::string(host);
                     new_eclient->port = std::to_string(ntohs(client_addr.sin_port));
                     /* put new client into server */
                     std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
                     controller.server.clients[new_client] = new_eclient;
-                    std::string msg = "Welcome to ERedis server!";
+                    std::string msg = "\x1b[36mWelcome to ERedis server!\x1b[0m";
                     send(new_client, msg.c_str(), msg.length(), 0);
                 }
             } else {
@@ -185,13 +209,19 @@ void event_loop()
                     EV_SET(&del_event, sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                     kevent(kq, &del_event, 1, NULL, 0, NULL);
 #endif
+                    std::stringstream ss;
+                    ss << "connect to client <host>: " << controller.server.clients[sock]->hostname
+                       << " <port>: " << controller.server.clients[sock]->port
+                       << std::endl;
+                    log_warn(ss.str());
                     controller.server.clients.erase(sock);
                 } else {
                     std::cout << "from client [" << sock << "] received command: " << buffer << std::endl;
                     /* change current client */
                     controller.client = controller.server.clients[sock];
                     auto res = controller.run(std::string(buffer));
-                    std::cout << "result after executing: " << res << std::endl;
+                    std::cout << "result after executing:\n"
+                              << res << std::endl;
                     if (to_upper(res) == REDIS_EXIT) {
                         std::lock_guard<std::mutex> lg2(*(controller.server.cli_mtx));
 #ifdef _WIN32
@@ -203,6 +233,11 @@ void event_loop()
                         EV_SET(&del_event, sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                         kevent(kq, &del_event, 1, NULL, 0, NULL);
 #endif
+                        std::stringstream ss;
+                        ss << "connect to client <host>: " << controller.server.clients[sock]->hostname
+                           << " <port>: " << controller.server.clients[sock]->port
+                           << std::endl;
+                        log_warn(ss.str());
                         controller.server.clients.erase(sock);
                     } else {
                         send(sock, res.c_str(), res.length(), 0);
