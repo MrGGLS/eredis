@@ -1,119 +1,200 @@
 #include "controller.h"
 #include "erdb.hpp"
 #include "eredis.hpp"
-#include <iostream>
 #include "utils.hpp"
+#include <iostream>
+
+#ifdef _WIN32
 #include <ws2tcpip.h>
-#pragma comment (lib,"ws2_32.lib")
-//void initialization();
+#pragma comment(lib, "ws2_32.lib")
+#elif __APPLE__
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <pcap/socket.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
+// void initialization();
 void testList(ERedisServer &server);
 void testExpire(ERedisServer &server);
 void testServer(ERedisServer &server);
 void testInt_Double(ERedisServer &server);
 void testSave();
+[[noreturn]] void socket_loop();
+
 int main(int argc, char **argv)
 {
-//    testSave();
+    socket_loop();
+    return 0;
+}
+
+void socket_loop()
+{
+#ifdef _WIN32
     /* init WS DLL for process */
     WSADATA wsData;
-    WORD ver = MAKEWORD(2,2);
-    int wsOK = WSAStartup(ver,&wsData);
-    if(wsOK!=0){
-        std::cerr<<"Sorry, can't initialize...."<<std::endl;
+    WORD ver = MAKEWORD(2, 2);
+    int wsOK = WSAStartup(ver, &wsData);
+    if (wsOK != 0) {
+        std::cerr << "Sorry, can't initialize...." << std::endl;
     }
+#endif
+
     /* create server socket */
-    SOCKET server_socket = socket(AF_INET,SOCK_STREAM,0);
-    if(server_socket==INVALID_SOCKET){
-        std::cerr<<"Sorry, can't create server socket...."<<std::endl;
+    SOCKET server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    SOCKET max_fd = server_socket;
+    if (server_socket == INVALID_SOCKET) {
+        std::cerr << "Sorry, can't create server socket...." << std::endl;
     }
+
     /* socket config */
     sockaddr_in hint;
-    hint.sin_family=AF_INET;
-    hint.sin_port=htons(SERVER_PORT);
-    hint.sin_addr.S_un.S_addr=INADDR_ANY;
+    hint.sin_family = AF_INET; // ipv4
+    hint.sin_port = htons(SERVER_PORT); // port
+#ifdef _WIN32
+    hint.sin_addr.S_un.S_addr = INADDR_ANY;
+#elif __APPLE__
+    hint.sin_addr.s_addr = INADDR_ANY;
+#endif
+
     /* bind addr */
-    bind(server_socket,(sockaddr*)&hint,sizeof(hint));
+    if (bind(server_socket, (sockaddr *)&hint, sizeof(hint)) < 0) {
+        std::cerr << "bind error" << std::endl;
+        exit(-1);
+    }
+
     /* set listening & max backlog */
-    listen(server_socket,MAX_BACKLOG);
+    listen(server_socket, MAX_BACKLOG);
+
     /* init controller*/
     Controller controller;
     load_data(&(controller.server));
+
     fd_set master;
     FD_ZERO(&master);
-    FD_SET(server_socket,&master);
-    while(true){
-        /* we don't wanna our master be destroyed */
+    FD_SET(server_socket, &master);
+    while (true) {
+        /* we don't want our master to be destroyed */
         fd_set copy = master;
+#ifdef _WIN32
         int client_num = select(0, &copy, nullptr, nullptr, nullptr);
-        for(int i=0;i<client_num;i++){
+#elif __APPLE__
+        int client_num = select(max_fd + 1, &copy, nullptr, nullptr, nullptr);
+#endif
+
+        // check all socket
+
+#ifdef _WIN32
+        for (int i = 0; i < client_num; i++)
+#elif __APPLE__
+        for (int i = 0; i <= max_fd; ++i)
+#endif
+        {
+
+#ifdef _WIN32
             SOCKET sock = copy.fd_array[i];
-            if(sock==server_socket){
+#elif __APPLE__
+            if (!FD_ISSET(i, &copy))
+                continue;
+            SOCKET sock = i;
+#endif
+
+            if (sock == server_socket) {
                 /* can't get more connections */
-                if(client_num>=MAX_BACKLOG){
+                if (client_num >= MAX_BACKLOG) {
                     continue;
-                }else{
+                } else {
                     sockaddr_in client_addr;
-                    int addr_len = sizeof(client_addr);
+                    socklen_t addr_len = sizeof(client_addr);
                     /* accept new client*/
-                    SOCKET new_client = accept(server_socket, (sockaddr*)&client_addr, &addr_len);
-                    FD_SET(new_client,&master);
+                    SOCKET new_client = accept(server_socket, (sockaddr *)&client_addr, &addr_len);
+                    max_fd = std::max(new_client, max_fd);
+
+                    FD_SET(new_client, &master);
                     /* complete new client info */
                     auto new_eclient = new ERedisClient();
-                    new_eclient->client_id=new_client;
-                    new_eclient->db_id=0;
-                    new_eclient->c_time=time(0);
-                    new_eclient->last_interaction=time(0);
-                    new_eclient->client_name="eclient"+ std::to_string(new_client);
+                    new_eclient->client_id = new_client;
+                    new_eclient->db_id = 0;
+                    new_eclient->c_time = time(0);
+                    new_eclient->last_interaction = time(0);
+                    new_eclient->client_name = "eclient" + std::to_string(new_client);
+
                     char host[NI_MAXHOST];
                     char port[NI_MAXSERV];
-                    ZeroMemory(host,NI_MAXHOST);
-                    ZeroMemory(port,NI_MAXSERV);
-                    if(getnameinfo((sockaddr*)& client_addr,addr_len,host,NI_MAXHOST,port,NI_MAXSERV,0)==0){
-                        std::cout<<"connect to client <host>: "<<host<<" <port>: "<<port<<std::endl;
-                    }else{
-                        inet_ntop(AF_INET,&client_addr.sin_addr,host,NI_MAXHOST);
-                        std::cout<<"connect to client <host>: "<<host<<" <port>: "<<ntohs(client_addr.sin_port)<<std::endl;
+#ifdef _WIN32
+                    ZeroMemory(host, NI_MAXHOST);
+                    ZeroMemory(port, NI_MAXSERV);
+#elif __APPLE__
+                    memset(host, 0, NI_MAXHOST);
+                    memset(port, 0, NI_MAXSERV);
+#endif
+                    if (getnameinfo((sockaddr *)&client_addr, addr_len, host, NI_MAXHOST, port, NI_MAXSERV, 0) == 0) {
+                        std::cout << "connect to client <host>: " << host << " <port>: " << port << std::endl;
+                    } else {
+                        inet_ntop(AF_INET, &client_addr.sin_addr, host, NI_MAXHOST);
+                        std::cout << "connect to client <host>: " << host << " <port>: " << ntohs(client_addr.sin_port)
+                                  << std::endl;
                     }
-                    new_eclient->hostname=std::string(host);
-                    new_eclient->port= std::to_string(ntohs(client_addr.sin_port));
+                    new_eclient->hostname = std::string(host);
+                    new_eclient->port = std::to_string(ntohs(client_addr.sin_port));
                     /* put new client into server */
                     std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
-                    controller.server.clients[new_client]=new_eclient;
+                    controller.server.clients[new_client] = new_eclient;
                     std::string msg = "Welcome to ERedis server!";
-                    send(new_client,msg.c_str(),msg.length(),0);
+                    send(new_client, msg.c_str(), msg.length(), 0);
                 }
-            }else{
+            } else {
+
                 char buffer[BUFFER_LEN];
-                ZeroMemory(buffer,BUFFER_LEN);
-                int bytes_in = recv(sock,buffer,BUFFER_LEN,0);
+#ifdef _WIN32
+                ZeroMemory(buffer, BUFFER_LEN);
+#elif __APPLE__
+                memset(buffer, 0, BUFFER_LEN);
+#endif
+
+                int bytes_in = recv(sock, buffer, BUFFER_LEN, 0);
                 std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
-                if(controller.server.clients.count(sock)<=0||bytes_in<=0){
+                if (controller.server.clients.count(sock) <= 0 || bytes_in <= 0) {
+#ifdef _WIN32
                     closesocket(sock);
-                    FD_CLR(sock,&master);
+#elif __APPLE__
+                    close(sock);
+#endif
+                    FD_CLR(sock, &master);
                     controller.server.clients.erase(sock);
-                }else{
-                    std::cout<<"from client ["<<sock<<"] received command: "<<buffer<<std::endl;
+                } else {
+                    std::cout << "from client [" << sock << "] received command: " << buffer << std::endl;
                     /* change current client */
-                    controller.client=controller.server.clients[sock];
+                    controller.client = controller.server.clients[sock];
                     auto res = controller.run(std::string(buffer));
-                    std::cout<<"result after executing: "<<res<<std::endl;
-                    if(to_upper(res)==REDIS_EXIT){
-                        std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
+                    std::cout << "result after executing: " << res << std::endl;
+                    if (to_upper(res) == REDIS_EXIT) {
+                        std::lock_guard<std::mutex> lg2(*(controller.server.cli_mtx));
+#ifdef _WIN32
                         closesocket(sock);
-                        FD_CLR(sock,&master);
+#elif __APPLE__
+                        close(sock);
+#endif
+                        FD_CLR(sock, &master);
                         controller.server.clients.erase(sock);
-                    }else{
-                        send(sock,res.c_str(),res.length(),0);
+                    } else {
+                        send(sock, res.c_str(), res.length(), 0);
                     }
                 }
             }
         }
     }
+
+#ifdef _WIN32
     WSACleanup();
-    return 0;
+#endif
 }
 
-void test_server(){
+void test_server()
+{
     //#if _WIN32
     //#include <winsock.h>
     //#pragma comment(lib, "ws2_32.lib")

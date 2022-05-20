@@ -7,7 +7,7 @@
 struct Controller {
     Parser parser;
     ERedisServer server;
-    ERedisClient* client;
+    ERedisClient *client;
 
 public:
     Controller();
