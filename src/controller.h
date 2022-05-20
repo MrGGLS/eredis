@@ -4,15 +4,14 @@
 #include "Parser.h"
 #include "eredis.hpp"
 #include <string>
-class Controller {
-private:
+struct Controller {
     Parser parser;
     ERedisServer server;
     ERedisClient client;
 
 public:
     Controller();
-    int run(std::string input);
+    std::string run(std::string input);
 };
 
 #endif // __CONTROLLER_H__

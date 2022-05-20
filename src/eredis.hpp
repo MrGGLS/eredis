@@ -18,6 +18,11 @@
 /*error codes*/
 #define REDIS_OK "OK"
 #define REDIS_FAIL "ERROR"
+#define REDIS_EXIT "EXIT"
+/* net setting */
+#define MAX_BACKLOG 16
+#define BUFFER_LEN 4096
+#define SERVER_PORT 8888
 
 /*default server config*/
 #define EREDIS_SERVER_PORT 6379 // 服务器端口
@@ -57,7 +62,7 @@ struct ERedisClient {
     std::string client_name; /* can be null */
 
     std::string hostname;
-    int port;
+    std::string port;
 
     // TODO: 通信模块
     // all socket function

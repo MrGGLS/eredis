@@ -2,15 +2,10 @@
 #include "erdb.hpp"
 #include "eredis.hpp"
 #include <iostream>
-//#if _WIN32
-//#include <winsock.h>
-//#pragma comment(lib, "ws2_32.lib")
-//#elif __APPLE__
-//// macOS
-//#elif __unix__
-//// 处理 Linux
-//#endif
-void initialization();
+#include "utils.hpp"
+#include <ws2tcpip.h>
+#pragma comment (lib,"ws2_32.lib")
+//void initialization();
 void testList(ERedisServer &server);
 void testExpire(ERedisServer &server);
 void testServer(ERedisServer &server);
@@ -18,7 +13,113 @@ void testInt_Double(ERedisServer &server);
 void testSave();
 int main(int argc, char **argv)
 {
-    testSave();
+//    testSave();
+    /* init WS DLL for process */
+    WSADATA wsData;
+    WORD ver = MAKEWORD(2,2);
+    int wsOK = WSAStartup(ver,&wsData);
+    if(wsOK!=0){
+        std::cerr<<"Sorry, can't initialize...."<<std::endl;
+    }
+    /* create server socket */
+    SOCKET server_socket = socket(AF_INET,SOCK_STREAM,0);
+    if(server_socket==INVALID_SOCKET){
+        std::cerr<<"Sorry, can't create server socket...."<<std::endl;
+    }
+    /* socket config */
+    sockaddr_in hint;
+    hint.sin_family=AF_INET;
+    hint.sin_port=htons(SERVER_PORT);
+    hint.sin_addr.S_un.S_addr=INADDR_ANY;
+    /* bind addr */
+    bind(server_socket,(sockaddr*)&hint,sizeof(hint));
+    /* set listening & max backlog */
+    listen(server_socket,MAX_BACKLOG);
+    /* init controller*/
+    Controller controller;
+    load_data(&(controller.server));
+    fd_set master;
+    FD_ZERO(&master);
+    FD_SET(server_socket,&master);
+    while(true){
+        /* we don't wanna our master be destroyed */
+        fd_set copy = master;
+        int client_num = select(0, &copy, nullptr, nullptr, nullptr);
+        for(int i=0;i<client_num;i++){
+            SOCKET sock = copy.fd_array[i];
+            if(sock==server_socket){
+                /* can't get more connections */
+                if(client_num>=MAX_BACKLOG){
+                    continue;
+                }else{
+                    sockaddr_in client_addr;
+                    int addr_len = sizeof(client_addr);
+                    /* accept new client*/
+                    SOCKET new_client = accept(server_socket, (sockaddr*)&client_addr, &addr_len);
+                    FD_SET(new_client,&master);
+                    /* complete new client info */
+                    auto new_eclient = new ERedisClient();
+                    new_eclient->client_id=new_client;
+                    new_eclient->db_id=0;
+                    new_eclient->c_time=time(0);
+                    new_eclient->last_interaction=time(0);
+                    new_eclient->client_name="eclient"+ std::to_string(new_client);
+                    char host[NI_MAXHOST];
+                    char port[NI_MAXSERV];
+                    ZeroMemory(host,NI_MAXHOST);
+                    ZeroMemory(port,NI_MAXSERV);
+                    if(getnameinfo((sockaddr*)& client_addr,addr_len,host,NI_MAXHOST,port,NI_MAXSERV,0)==0){
+                        std::cout<<"connect to client <host>: "<<host<<" <port>: "<<port<<std::endl;
+                    }else{
+                        inet_ntop(AF_INET,&client_addr.sin_addr,host,NI_MAXHOST);
+                        std::cout<<"connect to client <host>: "<<host<<" <port>: "<<ntohs(client_addr.sin_port)<<std::endl;
+                    }
+                    new_eclient->hostname=std::string(host);
+                    new_eclient->port= std::to_string(ntohs(client_addr.sin_port));
+                    /* put new client into server */
+                    std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
+                    controller.server.clients[new_client]=new_eclient;
+                    std::string msg = "Welcome to ERedis server!";
+                    send(new_client,msg.c_str(),msg.length(),0);
+                }
+            }else{
+                char buffer[BUFFER_LEN];
+                ZeroMemory(buffer,BUFFER_LEN);
+                int bytes_in = recv(sock,buffer,BUFFER_LEN,0);
+                std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
+                if(controller.server.clients.count(sock)<=0||bytes_in<=0){
+                    closesocket(sock);
+                    FD_CLR(sock,&master);
+                    controller.server.clients.erase(sock);
+                }else{
+                    std::cout<<"from client ["<<sock<<"] received command: "<<buffer<<std::endl;
+                    auto res = controller.run(std::string(buffer));
+                    std::cout<<"result after executing: "<<res<<std::endl;
+                    if(to_upper(res)==REDIS_EXIT){
+                        std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
+                        closesocket(sock);
+                        FD_CLR(sock,&master);
+                        controller.server.clients.erase(sock);
+                    }else{
+                        send(sock,res.c_str(),res.length(),0);
+                    }
+                }
+            }
+        }
+    }
+    WSACleanup();
+    return 0;
+}
+
+void test_server(){
+    //#if _WIN32
+    //#include <winsock.h>
+    //#pragma comment(lib, "ws2_32.lib")
+    //#elif __APPLE__
+    //// macOS
+    //#elif __unix__
+    //// 处理 Linux
+    //#endif
     //定义长度变量
     int send_len = 0;
     int recv_len = 0;
@@ -99,28 +200,27 @@ int main(int argc, char **argv)
     //    //释放DLL资源
     //    WSACleanup();
     //#endif
-    return 0;
-}
 
-//#if _WIN32
-// void initialization()
-//{
-//    //初始化套接字库
-//    WORD w_req = MAKEWORD(2, 2); //版本号
-//    WSADATA wsadata;
-//    int err;
-//    err = WSAStartup(w_req, &wsadata);
-//    if (err != 0) {
-//        std::cout << "初始化套接字库失败！" << std::endl;
-//    }
-//    //检测版本号
-//    if (LOBYTE(wsadata.wVersion) != 2 || HIBYTE(wsadata.wHighVersion) != 2) {
-//        std::cout << "套接字库版本号不符！" << std::endl;
-//        WSACleanup();
-//    }
-//    //填充服务端地址信息
-//}
-//#endif
+    //#if _WIN32
+    // void initialization()
+    //{
+    //    //初始化套接字库
+    //    WORD w_req = MAKEWORD(2, 2); //版本号
+    //    WSADATA wsadata;
+    //    int err;
+    //    err = WSAStartup(w_req, &wsadata);
+    //    if (err != 0) {
+    //        std::cout << "初始化套接字库失败！" << std::endl;
+    //    }
+    //    //检测版本号
+    //    if (LOBYTE(wsadata.wVersion) != 2 || HIBYTE(wsadata.wHighVersion) != 2) {
+    //        std::cout << "套接字库版本号不符！" << std::endl;
+    //        WSACleanup();
+    //    }
+    //    //填充服务端地址信息
+    //}
+    //#endif
+}
 
 void testSave()
 {
@@ -327,33 +427,3 @@ void testServer(ERedisServer &server)
     std::cout << server.get_dbsize(0) << std::endl;
     std::cout << server.get_dbsize(1) << std::endl;
 }
-
-/* CLI */
-
-/* Parser --> controller --> dbops */
-/* class controller { */
-/* private: */
-/*     Parser *par; */
-/*     DBOPS *dbops; */
-/* public: */
-/*     run(); */
-/* } */
-
-/* class Parser { */
-
-/* } */
-
-/* controller::run(string input) { */
-/*     auto retType = par.run(input); */
-/*     switch (retType.type) { */
-/*     case type1: */
-/*         dbops.f1(); */
-
-/*     } */
-/* } */
-
-/* class DBOPS { */
-/*     f1(); */
-/*     f2(); */
-/*     f3(); */
-/* } */

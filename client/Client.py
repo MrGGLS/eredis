@@ -26,11 +26,14 @@ if __name__ == '__main__':
 
     sender = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    sender.connect((socket.gethostname(), 8000))
+    sender.connect((socket.gethostname(), 8888))
 
     printFunction()
 
     promoptString = 'EasyRedis>'
+    recv_data = sender.recv(1024)
+    print(recv_data.decode('utf-8'))
+    # print("\033[0;31;40m"+recv_data.decode('utf-8')+'\033[0m')
 
     while True:
         string = input(promoptString)
@@ -45,8 +48,7 @@ if __name__ == '__main__':
         '''
 
         sender.send(string.encode('utf-8'))  
-
         recv_data = sender.recv(1024)
-
-        print("\033[0;31;40m"+recv_data.decode('utf-8')+'\033[0m')
+        print(recv_data.decode('utf-8'))
+        # print("\033[0;31;40m"+recv_data.decode('utf-8')+'\033[0m')
 
