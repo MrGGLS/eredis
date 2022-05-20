@@ -2,6 +2,7 @@
 #include "erdb.hpp"
 #include "eredis.hpp"
 #include "utils.hpp"
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -28,7 +29,8 @@ void testInt_Double(ERedisServer &server);
 void testSave();
 [[noreturn]] void event_loop();
 
-void logo() {
+void logo()
+{
     std::cout << "\n";
     std::ifstream fs;
     std::string pwd;
@@ -115,6 +117,8 @@ void event_loop()
 
         if (client_num < 0) {
             log_err("client num < 0\n");
+        } else if (client_num == 0) {
+            log_system("client equals zero\n");
         }
 
         // check all socket
@@ -198,6 +202,7 @@ void event_loop()
 #endif
 
                 int bytes_in = recv(sock, buffer, BUFFER_LEN, 0);
+                assert(bytes_in > 0);
                 std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
                 if (controller.server.clients.count(sock) <= 0 || bytes_in <= 0) {
 #ifdef _WIN32

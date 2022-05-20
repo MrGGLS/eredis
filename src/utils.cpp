@@ -24,9 +24,9 @@ std::string format_time()
 {
     std::string stime;
     std::stringstream strtime;
-    std::time_t currenttime = std::time(0);
+    time_t currenttime = time(0);
     char tAll[255];
-    std::strftime(tAll, sizeof(tAll), "%Y-%m-%d|%H:%M:%S", std::localtime(&currenttime));
+    strftime(tAll, sizeof(tAll), "%Y-%m-%d|%H:%M:%S", localtime(&currenttime));
     strtime << tAll;
     return strtime.str();
 }

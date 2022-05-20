@@ -23,6 +23,7 @@
 #define MAX_BACKLOG 16
 #define BUFFER_LEN 4096
 #define SERVER_PORT 8888
+#define MAX_TIMEOUT 666
 
 /*default server config*/
 #define EREDIS_SERVER_PORT 6379 // 服务器端口
