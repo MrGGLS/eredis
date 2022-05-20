@@ -66,6 +66,91 @@ std::string Controller::run(std::string input)
         int32_t end = parser_res->getAnEnd();
         return server.getrange(client.db_id, key, start, end);
     }
+        case Parser_Token::incr_key_op: {
+            auto parser_res = dynamic_cast<incr_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            return server.incr(client.db_id, key);
+        }
+        case Parser_Token::decr_key_op: {
+            auto parser_res = dynamic_cast<decr_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            return server.decr(client.db_id, key);
+        }
+        case Parser_Token::lpush_key_list_op: {
+            auto parser_res = dynamic_cast<lpush_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            ERObject value=parser_res->getValue();
+            return server.lpush(client.db_id, key,value);
+        }
+        case Parser_Token::rpush_key_list_op: {
+            auto parser_res = dynamic_cast<rpush_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            ERObject value=parser_res->getValue();
+
+            return server.rpush(client.db_id, key, value);
+        }
+        case Parser_Token::lrange_key_op: {
+            auto parser_res = dynamic_cast<lrange_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            int32_t start = parser_res->getStart();
+            int32_t end = parser_res->getAnEnd();
+            return server.lrange(client.db_id, key, start, end);
+        }
+        case Parser_Token::lpop_key_op: {
+            auto parser_res = dynamic_cast<lpop_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            return server.lpop(client.db_id, key);
+        }
+        case Parser_Token::rpop_key_op: {
+            auto parser_res = dynamic_cast<rpop_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            return server.rpop(client.db_id, key);
+        }
+        case Parser_Token::lindex_key_op: {
+            auto parser_res = dynamic_cast<lindex_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            int index=parser_res->getIndex();
+            return server.lindex(client.db_id, key,index);
+        }
+        case Parser_Token::llen_key_op: {
+            auto parser_res = dynamic_cast<llen_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            return server.llen(client.db_id, key);
+        }
+        case Parser_Token::lset_key_index_op: {
+            auto parser_res = dynamic_cast<lset_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            int index=parser_res->getIndex();
+            std::string value=parser_res->getValue();
+            return server.lset(client.db_id, key,index,value);
+        }
+        case Parser_Token::expire_key_op: {
+            auto parser_res = dynamic_cast<expire_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            int time=parser_res->getTime();
+            return server.set_expire(client.db_id, key,time);
+        }
+        case Parser_Token::setex_key_op: {
+            auto parser_res = dynamic_cast<setex_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            int time=parser_res->getTime();
+            ERObject value=parser_res->getValue();
+            return server.setex(client.db_id, key,time,value);
+        }
+        case Parser_Token::ttl_key_op: {
+            auto parser_res = dynamic_cast<ttl_key_result *>(parser_result.get());
+            std::string key = parser_res->getKey();
+            return server.ttl(client.db_id, key);
+        }
+        case Parser_Token::save_op: {
+ //           auto parser_res = dynamic_cast<save_result *>(parser_result.get());
+            if (save_data(&server)){
+                return "save succeed";
+            } else
+                return "save failed";
+
+        }
+
     default:
         // TODO: ERROR
         break;

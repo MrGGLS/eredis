@@ -71,8 +71,8 @@ int main(int argc, char **argv)
                     if(getnameinfo((sockaddr*)& client_addr,addr_len,host,NI_MAXHOST,port,NI_MAXSERV,0)==0){
                         std::cout<<"connect to client <host>: "<<host<<" <port>: "<<port<<std::endl;
                     }else{
-                        inet_ntop(AF_INET,&client_addr.sin_addr,host,NI_MAXHOST);
-                        std::cout<<"connect to client <host>: "<<host<<" <port>: "<<ntohs(client_addr.sin_port)<<std::endl;
+//                        inet_ntop(AF_INET,&client_addr.sin_addr,host,NI_MAXHOST);
+//                        std::cout<<"connect to client <host>: "<<host<<" <port>: "<<ntohs(client_addr.sin_port)<<std::endl;
                     }
                     new_eclient->hostname=std::string(host);
                     new_eclient->port= std::to_string(ntohs(client_addr.sin_port));

@@ -4,7 +4,7 @@ cmake_policy(SET CMP0091 NEW)
 project(easy-redis)
 link_libraries(ws2_32 wsock32)
 set(CMAKE_CXX_STANDARD 20)
-
+add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 # target
 ADD_EXECUTABLE(easy-redis
     src/eredis.cpp
