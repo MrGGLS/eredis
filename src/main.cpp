@@ -11,27 +11,26 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <pcap/socket.h>
+#include <sys/event.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
 
-// void initialization();
 void testList(ERedisServer &server);
 void testExpire(ERedisServer &server);
 void testServer(ERedisServer &server);
 void testInt_Double(ERedisServer &server);
 void testSave();
-[[noreturn]] void socket_loop();
+[[noreturn]] void event_loop();
 
 int main(int argc, char **argv)
 {
-    socket_loop();
-    return 0;
+    event_loop();
 }
 
-void socket_loop()
+void event_loop()
 {
 #ifdef _WIN32
     /* init WS DLL for process */
@@ -73,33 +72,45 @@ void socket_loop()
     Controller controller;
     load_data(&(controller.server));
 
+#ifdef __APPLE__
+    int kq = kqueue();
+    struct kevent changes;
+    EV_SET(&changes, server_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    kevent(kq, &changes, 1, NULL, 0, NULL);
+#elif __WIN32
     fd_set master;
     FD_ZERO(&master);
     FD_SET(server_socket, &master);
+#endif
+
     while (true) {
+
+#ifdef _WIN32
         /* we don't want our master to be destroyed */
         fd_set copy = master;
-#ifdef _WIN32
         int client_num = select(0, &copy, nullptr, nullptr, nullptr);
 #elif __APPLE__
-        int client_num = select(max_fd + 1, &copy, nullptr, nullptr, nullptr);
+        struct kevent events[FD_SETSIZE];
+        int client_num = kevent(kq, NULL, 0, events, FD_SETSIZE, NULL);
 #endif
+
+        if (client_num < 0) {
+            std::cerr << "[ERROR] client num < 0\n";
+        }
 
         // check all socket
 
-#ifdef _WIN32
-        for (int i = 0; i < client_num; i++)
-#elif __APPLE__
-        for (int i = 0; i <= max_fd; ++i)
-#endif
-        {
+        for (int i = 0; i < client_num; i++) {
 
 #ifdef _WIN32
             SOCKET sock = copy.fd_array[i];
 #elif __APPLE__
-            if (!FD_ISSET(i, &copy))
+            struct kevent event = events[i];
+            SOCKET sock = event.flags & EV_ERROR ? -1 : event.ident;
+            if (sock == -1) {
+                std::cerr << "[ERROR] sock == -1\n";
                 continue;
-            SOCKET sock = i;
+            }
 #endif
 
             if (sock == server_socket) {
@@ -113,7 +124,13 @@ void socket_loop()
                     SOCKET new_client = accept(server_socket, (sockaddr *)&client_addr, &addr_len);
                     max_fd = std::max(new_client, max_fd);
 
+#ifdef _WIN32
                     FD_SET(new_client, &master);
+#elif __APPLE__
+                    struct kevent new_event;
+                    EV_SET(&new_event, new_client, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                    kevent(kq, &new_event, 1, NULL, 0, NULL);
+#endif
                     /* complete new client info */
                     auto new_eclient = new ERedisClient();
                     new_eclient->client_id = new_client;
@@ -131,6 +148,7 @@ void socket_loop()
                     memset(host, 0, NI_MAXHOST);
                     memset(port, 0, NI_MAXSERV);
 #endif
+
                     if (getnameinfo((sockaddr *)&client_addr, addr_len, host, NI_MAXHOST, port, NI_MAXSERV, 0) == 0) {
                         std::cout << "connect to client <host>: " << host << " <port>: " << port << std::endl;
                     } else {
@@ -160,10 +178,13 @@ void socket_loop()
                 if (controller.server.clients.count(sock) <= 0 || bytes_in <= 0) {
 #ifdef _WIN32
                     closesocket(sock);
+                    FD_CLR(sock, &master);
 #elif __APPLE__
                     close(sock);
+                    struct kevent del_event;
+                    EV_SET(&del_event, sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    kevent(kq, &del_event, 1, NULL, 0, NULL);
 #endif
-                    FD_CLR(sock, &master);
                     controller.server.clients.erase(sock);
                 } else {
                     std::cout << "from client [" << sock << "] received command: " << buffer << std::endl;
@@ -175,10 +196,13 @@ void socket_loop()
                         std::lock_guard<std::mutex> lg2(*(controller.server.cli_mtx));
 #ifdef _WIN32
                         closesocket(sock);
+                        FD_CLR(sock, &master);
 #elif __APPLE__
                         close(sock);
+                        struct kevent del_event;
+                        EV_SET(&del_event, sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                        kevent(kq, &del_event, 1, NULL, 0, NULL);
 #endif
-                        FD_CLR(sock, &master);
                         controller.server.clients.erase(sock);
                     } else {
                         send(sock, res.c_str(), res.length(), 0);
@@ -191,118 +215,6 @@ void socket_loop()
 #ifdef _WIN32
     WSACleanup();
 #endif
-}
-
-void test_server()
-{
-    //#if _WIN32
-    //#include <winsock.h>
-    //#pragma comment(lib, "ws2_32.lib")
-    //#elif __APPLE__
-    //// macOS
-    //#elif __unix__
-    //// 处理 Linux
-    //#endif
-    //定义长度变量
-    int send_len = 0;
-    int recv_len = 0;
-    int len = 0;
-    //定义发送缓冲区和接受缓冲区
-
-    char output[100];
-    char input[100];
-
-    //解释器测试
-    /* std::cin.getline(input, 100); */
-    /* Controller ctrl; */
-    /* std::cout<<ctrl.run(input); */
-
-    //    while (true) {
-    //        /* 处理输入 */
-    //        // socket
-    //        // auto input;
-    //        // std::cin >> input;
-    //
-    //        // return
-    //        /* Ret ret = contorller->run(input); */
-    //
-    //        /* 响应 */
-    //        // cout << /* 一些输出 */;
-    //    }
-    //#if _WIN32
-    //    //定义服务端套接字，接受请求套接字
-    //    SOCKET s_server;
-    //    SOCKET s_accept;
-    //    //服务端地址客户端地址
-    //    SOCKADDR_IN server_addr;
-    //    SOCKADDR_IN accept_addr;
-    //    initialization();
-    //    //填充服务端信息
-    //    server_addr.sin_family = AF_INET;
-    //    server_addr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
-    //    server_addr.sin_port = htons(5010);
-    //    //创建套接字
-    //    s_server = socket(AF_INET, SOCK_STREAM, 0);
-    //    if (bind(s_server, (SOCKADDR *)&server_addr, sizeof(SOCKADDR)) == SOCKET_ERROR) {
-    //        std::cout << "error" << std::endl;
-    //        WSACleanup();
-    //    }
-    //    //设置套接字为监听状态
-    //    if (listen(s_server, SOMAXCONN) < 0) {
-    //        std::cout << "error" << std::endl;
-    //        WSACleanup();
-    //    }
-    //    std::cout << "wait..." << std::endl;
-    //    //接受连接请求
-    //    len = sizeof(SOCKADDR);
-    //    s_accept = accept(s_server, (SOCKADDR *)&accept_addr, &len);
-    //    if (s_accept == SOCKET_ERROR) {
-    //        std::cout << "error" << std::endl;
-    //        WSACleanup();
-    //        return 0;
-    //    }
-    //
-    //    //接收数据
-    //    while (1) {
-    //        recv_len = recv(s_accept, input, 100, 0);
-    //        if (recv_len < 0) {
-    //            break;
-    //        }
-    //
-    //        //处理input数据并发送到客户端
-    //        std::cin >> output;
-    //
-    //        send_len = send(s_accept, output, 100, 0);
-    //        if (send_len < 0) {
-    //            break;
-    //        }
-    //    }
-    //    //关闭套接字
-    //    closesocket(s_server);
-    //    closesocket(s_accept);
-    //    //释放DLL资源
-    //    WSACleanup();
-    //#endif
-
-    //#if _WIN32
-    // void initialization()
-    //{
-    //    //初始化套接字库
-    //    WORD w_req = MAKEWORD(2, 2); //版本号
-    //    WSADATA wsadata;
-    //    int err;
-    //    err = WSAStartup(w_req, &wsadata);
-    //    if (err != 0) {
-    //        std::cout << "初始化套接字库失败！" << std::endl;
-    //    }
-    //    //检测版本号
-    //    if (LOBYTE(wsadata.wVersion) != 2 || HIBYTE(wsadata.wHighVersion) != 2) {
-    //        std::cout << "套接字库版本号不符！" << std::endl;
-    //        WSACleanup();
-    //    }
-    //    //填充服务端地址信息
-    //}
-    //#endif
 }
 
 void testSave()
