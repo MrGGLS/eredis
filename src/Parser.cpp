@@ -316,6 +316,7 @@ std::unique_ptr<op_result> Parser::getstrange_op()
         "", 0, 0);
     if (4 == split_result.size()) {
         if (isInt(split_result[2].c_str()) && isInt(split_result[3].c_str())) {
+            res.get()->setKey(split_result[1]);
             res.get()->setStart(std::stoi(split_result[2]));
             res.get()->setAnEnd(std::stoi(split_result[3]));
             return res;

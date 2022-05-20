@@ -212,10 +212,14 @@ std::string ERedisServer::append_value(int db_id, std::string key, std::string s
 /* the interval includes start and end! */
 std::string ERedisServer::getrange(int db_id, std::string key, int32_t start, int32_t end)
 {
+    if(start<0||end< -1)
+        return REDIS_FAIL;
     ERedisDb *edb = this->db[db_id];
     if (edb->expires.count(key) && edb->expires[key] < time(0))
         del_key(db_id, key);
-    if (edb->dict.count(key) && edb->dict[key].get_type() == ObjectType::EREDIS_STRING) {
+    if (edb->dict.count(key) && (edb->dict[key].get_type() == ObjectType::EREDIS_STRING)) {
+        if(end==-1)
+            end=edb->dict[key].get_str().length();
         return edb->dict[key].get_str().substr(start, end - start + 1);
     }
     return REDIS_FAIL;
@@ -312,7 +316,7 @@ std::string ERedisServer::lrange(int db_id, std::string key, int start, int end)
         for (int i = start; i < end; i++) {
             res += std::to_string(i) + ")" + list[i] + "\r\n";
         }
-        return res;
+        return res==""?"(empty)":res;
     }
     return REDIS_FAIL;
 }

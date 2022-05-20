@@ -13,7 +13,7 @@
 #include <thread>
 #include <unordered_map>
 #include <vector>
-//#include "iostream"
+#include "iostream"
 
 /*error codes*/
 #define REDIS_OK "OK"
