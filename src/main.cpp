@@ -192,8 +192,7 @@ void event_loop()
                     nlohmann::json j;
                     j["type"] = 5;
                     j["message"] = msg.c_str();
-                    std::cout << j.dump() << std::endl;
-                    send(new_client, j.dump().c_str(), j.size(), 0);
+                    send(new_client, j.dump().c_str(), j.dump().length(), 0);
                 }
             } else {
 
@@ -249,10 +248,10 @@ void event_loop()
                         controller.server.clients.erase(sock);
                     } else {
                         nlohmann::json j;
-                        j["type"] = 0;
+                        j["type"] = 6;
                         j["message"] = res.c_str();
                         std::cout << j << std::endl;
-                        send(sock, j.dump().c_str(), res.length(), 0);
+                        send(sock, j.dump().c_str(), j.dump().length(), 0);
                     }
                 }
             }

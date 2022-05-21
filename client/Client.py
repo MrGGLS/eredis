@@ -92,7 +92,8 @@ def processMessage(data):
          print('Success!')
 
      elif response_type == 6:
-         promoptString = 'EasyRedis ' + '[' + str(response_message) + ']>'
+         promoptString = 'EasyRedis>'
+         print(response_message)
 
      elif response_type == 10:
          if response_message == '1':
@@ -139,9 +140,9 @@ if __name__ == '__main__':
 
     global promoptString
     promoptString = 'EasyRedis>'
-    # recv_data = json.loads(sender.recv(1024).decode('utf-8'))
-    recv_data = sender.recv(1024).decode('utf-8')
-    print(recv_data)
+    recv_data = json.loads(sender.recv(1024).decode('utf-8'))
+    # recv_data = sender.recv(1024).decode('utf-8')
+    print(recv_data['message'])
     while True:
         string = input(promoptString)
 
@@ -163,8 +164,9 @@ if __name__ == '__main__':
 
         sender.send(string.encode('utf-8'))
 
-        recv_data = sender.recv(1024).decode('utf-8')
-        print(recv_data)
-        # processMessage(recv_data)
+        # print(sender.recv(1024).decode('utf-8'))
+        recv_data = json.loads(sender.recv(1024).decode('utf-8'))
+        # print(recv_data)
+        processMessage(recv_data)
 
 
