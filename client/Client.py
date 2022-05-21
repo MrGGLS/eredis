@@ -45,7 +45,7 @@ def helpFunction():
     print('     \"quit\" to exit')
 
     while True:
-        helpString = input('EasyRedis(help)>')
+        helpString = input('EasyRedis(help)> ')
 
         if helpString == 'quit':
             break
@@ -92,7 +92,7 @@ def processMessage(data):
          print('Success!')
 
      elif response_type == 6:
-         promoptString = 'EasyRedis>'
+         promoptString = 'EasyRedis> '
          print(response_message)
 
      elif response_type == 10:
@@ -139,7 +139,7 @@ if __name__ == '__main__':
     printFunction()
 
     global promoptString
-    promoptString = 'EasyRedis>'
+    promoptString = 'EasyRedis> '
     recv_data = json.loads(sender.recv(1024).decode('utf-8'))
     # recv_data = sender.recv(1024).decode('utf-8')
     print(recv_data['message'])
