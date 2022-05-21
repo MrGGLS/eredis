@@ -564,12 +564,12 @@ std::unique_ptr<op_result> Parser::setex_key_op() {
                     return res;
                 } else{
                     std::unique_ptr<setex_result> res = std::make_unique<setex_result>(Parser_Token::setex_key_op, "", split_result[1],
-                                                                                       time,ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]));
+                                                                                       time,ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[3]));
                     return res;
                 }
             } catch (std::exception) {
                 std::unique_ptr<setex_result> res = std::make_unique<setex_result>(Parser_Token::setex_key_op, "", split_result[1],
-                                                                                   time,ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]));
+                                                                                   time,ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[3]));
                 return res;
             }
         } else{
