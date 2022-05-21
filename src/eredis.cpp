@@ -502,7 +502,7 @@ std::vector<int> ERedisServer::get_all_idle_clients()
         std::vector<int> should_del_clients=server->get_all_idle_clients();
         std::lock_guard<std::mutex> lg(*(server->cli_mtx));
         for(auto idle_cli:should_del_clients){
-            server->clients.erase(kv.first);
+            server->clients.erase(idle_cli);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(EREDIS_DEFAULT_DEL_CLIENT_INTERVAL));
     }
