@@ -267,7 +267,7 @@ std::string ERedisServer::lpush(int db_id, std::string key, ERObject erObject)
     if (edb->expires.count(key) && edb->expires[key] < time(0))
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
-    if (edb->dict[key].get_type() != ObjectType::EREDIS_LIST){
+    if (erObject.get_type() != ObjectType::EREDIS_LIST){
         return REDIS_FAIL;
     }
     if (edb->dict.count(key) > 0) {
@@ -290,7 +290,7 @@ std::string ERedisServer::rpush(int db_id, std::string key, ERObject erObject)
     if (edb->expires.count(key) && edb->expires[key] < time(0))
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
-    if (edb->dict[key].get_type() != ObjectType::EREDIS_LIST){
+    if (erObject.get_type() != ObjectType::EREDIS_LIST){
         return REDIS_FAIL;
     }
     if (edb->dict.count(key) > 0) {
