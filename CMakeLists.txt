@@ -26,4 +26,5 @@ ADD_EXECUTABLE(easy-redis
         src/erdb.cpp
         src/utils.hpp
         src/utils.cpp
+        src/json.hpp
         )

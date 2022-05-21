@@ -1,9 +1,9 @@
 #include "controller.h"
 #include "erdb.hpp"
 #include "eredis.hpp"
+#include "json.hpp"
 #include "utils.hpp"
 #include <cassert>
-#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -18,7 +18,6 @@
 #include <sys/event.h>
 #include <sys/select.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <unistd.h>
 #endif
 
@@ -189,8 +188,12 @@ void event_loop()
                     /* put new client into server */
                     std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
                     controller.server.clients[new_client] = new_eclient;
-                    std::string msg = "\x1b[36mWelcome to ERedis server!\x1b[0m";
-                    send(new_client, msg.c_str(), msg.length(), 0);
+                    std::string msg = "Welcome to ERedis server!";
+                    nlohmann::json j;
+                    j["type"] = 5;
+                    j["message"] = msg.c_str();
+                    std::cout << j.dump() << std::endl;
+                    send(new_client, j.dump().c_str(), j.size(), 0);
                 }
             } else {
 
@@ -202,7 +205,7 @@ void event_loop()
 #endif
 
                 int bytes_in = recv(sock, buffer, BUFFER_LEN, 0);
-//                assert(bytes_in > 0);
+                //                assert(bytes_in > 0);
                 std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
                 if (controller.server.clients.count(sock) <= 0 || bytes_in <= 0) {
 #ifdef _WIN32
@@ -245,7 +248,11 @@ void event_loop()
                         log_warn(ss.str());
                         controller.server.clients.erase(sock);
                     } else {
-                        send(sock, res.c_str(), res.length(), 0);
+                        nlohmann::json j;
+                        j["type"] = 0;
+                        j["message"] = res.c_str();
+                        std::cout << j << std::endl;
+                        send(sock, j.dump().c_str(), res.length(), 0);
                     }
                 }
             }
