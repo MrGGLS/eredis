@@ -4,7 +4,7 @@
 #include "Parser.h"
 #include <unordered_map>
 #include <sstream>
-
+#define doule_e_support 0
 /*
  * 目前存在未判定整数长度和浮点数长度是否合格bug
  * */
@@ -92,6 +92,7 @@ bool isDouble(const char * str)
                     return false;
                 }
                 break;
+#if doule_e_support
             case 'e':case 'E':
                 if (isE || !numBefore)
                 {
@@ -104,6 +105,7 @@ bool isDouble(const char * str)
                     isE = true;
                 }
                 break;
+#endif
             case '.':
                 if (isPoint)
                 {
@@ -248,7 +250,7 @@ std::unique_ptr<op_result> Parser::select_db_op()
     std::unique_ptr<select_db_result> res = std::make_unique<select_db_result>(Parser_Token::select_n_op, "", 0);
 
     if (split_result.size() == 2) {
-        if (isInt(split_result[1].c_str())) {
+        if (isInt(split_result[1].c_str())&&split_result[1].size()<3) {
             int N = std::stoi(split_result[1]);
             res.get()->setDbN(N);
             return res;
@@ -312,18 +314,24 @@ std::unique_ptr<op_result> Parser::append_key_value_op()
 
 std::unique_ptr<op_result> Parser::getstrange_op()
 {
+
     std::unique_ptr<getrange_result> res = std::make_unique<getrange_result>(Parser_Token::getrange_key_start_end, "",
         "", 0, 0);
     if (4 == split_result.size()) {
-        if (isInt(split_result[2].c_str()) && isInt(split_result[3].c_str())) {
-            res.get()->setKey(split_result[1]);
-            res.get()->setStart(std::stoi(split_result[2]));
-            res.get()->setAnEnd(std::stoi(split_result[3]));
-            return res;
-        } else {
-            res.get()->setOptype(Parser_Token::no_vaild_error);
-            return res;
+        try {
+            if (isInt(split_result[2].c_str()) && isInt(split_result[3].c_str())) {
+                res.get()->setKey(split_result[1]);
+                res.get()->setStart(std::stoi(split_result[2]));
+                res.get()->setAnEnd(std::stoi(split_result[3]));
+                return res;
+            } else {
+                res.get()->setOptype(Parser_Token::no_vaild_error);
+                return res;
+            }
+        }catch (std::exception){
+            return std::make_unique<op_result>(Parser_Token::no_vaild_error,"");
         }
+
     } else {
         res.get()->setOptype(Parser_Token::arguments_error);
         return res;
@@ -354,19 +362,25 @@ std::unique_ptr<op_result> Parser::syntax_error()
 std::unique_ptr<op_result> Parser::set_key_value_op()
 {
     if (3 == split_result.size()) {
-        if(isInt(split_result[2].c_str())){
+        try {
+            if(isInt(split_result[2].c_str())){
 //            ERObject object = ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]);
-            int intvalue= std::stoi(split_result[2]);
-            std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op, "", split_result[1], ERObject(ObjectType::EREDIS_INT, (void *)&intvalue));
-            return res;
-        } else if (isDouble(split_result[2].c_str())){
-            double doubleValue= std::stod(split_result[2]);
-            std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op, "", split_result[1], ERObject(ObjectType::EREDIS_DOUBLE, (void *)&doubleValue));
-            return res;
-        } else{
+                int intvalue= std::stoi(split_result[2]);
+                std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op, "", split_result[1], ERObject(ObjectType::EREDIS_INT, (void *)&intvalue));
+                return res;
+            } else if (isDouble(split_result[2].c_str())){
+                double doubleValue= std::stod(split_result[2]);
+                std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op, "", split_result[1], ERObject(ObjectType::EREDIS_DOUBLE, (void *)&doubleValue));
+                return res;
+            } else{
+                std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op, "", split_result[1], ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]));
+                return res;
+            }
+        } catch (std::exception) {
             std::unique_ptr<set_key_value_result> res = std::make_unique<set_key_value_result>(Parser_Token::set_key_value_op, "", split_result[1], ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]));
             return res;
         }
+
     } else {
 //        auto start = split_result.begin() + 2;
 //        auto end = split_result.end();
@@ -418,9 +432,14 @@ std::unique_ptr<op_result> Parser::rpush_key_op() {
 std::unique_ptr<op_result> Parser::lrange_key_op() {
     if (split_result.size()==4){
         if (isInt(split_result[2].c_str())& isInt(split_result[3].c_str())){
+            try {
+                int start=std::stoi(split_result[2]);
+                int end=std::stoi(split_result[3]);
+                return std::make_unique<lrange_result>(Parser_Token::lrange_key_op,"", split_result[1],start,end);
+            } catch (std::exception) {
+                return std::make_unique<op_result>(Parser_Token::no_vaild_error,"");
+            }
 
-            return std::make_unique<lrange_result>(Parser_Token::lrange_key_op,"", split_result[1],std::stoi(split_result[2]),
-                                                   std::stoi(split_result[3]));
         } else{
             return std::make_unique<op_result>(Parser_Token::no_vaild_error,"");
 
@@ -453,7 +472,13 @@ std::unique_ptr<op_result> Parser::rpop_key_op() {
 std::unique_ptr<op_result> Parser::lindex_key_op() {
     if (split_result.size()==3){
         if (isInt(split_result[2].c_str())){
-            return std::make_unique<lindex_result>(Parser_Token::lindex_key_op,"",split_result[1], std::stoi(split_result[2]));
+            try {
+                int index=std::stoi(split_result[2]);
+                return std::make_unique<lindex_result>(Parser_Token::lindex_key_op,"",split_result[1], index);
+            } catch (std::exception) {
+                return std::make_unique<op_result>(Parser_Token::no_vaild_error,"");
+            }
+
         } else{
             return std::make_unique<op_result>(Parser_Token::no_vaild_error,"");
         }
@@ -474,7 +499,13 @@ std::unique_ptr<op_result> Parser::llen_key_op() {
 std::unique_ptr<op_result> Parser::lset_key_op() {
     if (split_result.size()==4){
         if (isInt(split_result[2].c_str())){
-            return std::make_unique<lset_result>(Parser_Token::lset_key_index_op,"",split_result[1], std::stoi(split_result[2]),split_result[3]);
+            try {
+                int index=std::stoi(split_result[2]);
+                return std::make_unique<lset_result>(Parser_Token::lset_key_index_op,"",split_result[1], index,split_result[3]);
+            } catch (std::exception) {
+                return std::make_unique<op_result>(Parser_Token::no_vaild_error,"");
+            }
+
         } else{
             return std::make_unique<op_result>(Parser_Token::no_vaild_error,"");
         }
@@ -495,7 +526,13 @@ std::unique_ptr<op_result> Parser::save_op() {
 std::unique_ptr<op_result> Parser::expire_key_op() {
     if (split_result.size()==3){
         if (isInt(split_result[2].c_str())){
-            return std::make_unique<expire_result>(Parser_Token::expire_key_op,"",split_result[1], std::stoi(split_result[2]));
+            try {
+                int time = std::stoi(split_result[2]);
+                return std::make_unique<expire_result>(Parser_Token::expire_key_op,"",split_result[1], time);
+            } catch (std::exception) {
+                return std::make_unique<op_result>(Parser_Token::no_vaild_error,"");
+            }
+
         } else{
             return std::make_unique<op_result>(Parser_Token::no_vaild_error,"");
         }
@@ -506,20 +543,33 @@ std::unique_ptr<op_result> Parser::expire_key_op() {
 std::unique_ptr<op_result> Parser::setex_key_op() {
     if (split_result.size()==4){
         if (isInt(split_result[2].c_str())){
-            if(isInt(split_result[3].c_str())){
+            int time;
+            try {
+                time = std::stoi(split_result[2]);
+            } catch (std::exception) {
+                return std::make_unique<op_result>(Parser_Token::no_vaild_error,"");
+            }
+
+            try {
+                if(isInt(split_result[3].c_str())){
 //            ERObject object = ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]);
-                int intvalue= std::stoi(split_result[3]);
+                    int intvalue= std::stoi(split_result[3]);
+                    std::unique_ptr<setex_result> res = std::make_unique<setex_result>(Parser_Token::setex_key_op, "", split_result[1],
+                                                                                       time,ERObject(ObjectType::EREDIS_INT, (void *)&intvalue));
+                    return res;
+                } else if (isDouble(split_result[3].c_str())){
+                    double doubleValue= std::stod(split_result[3]);
+                    std::unique_ptr<setex_result> res = std::make_unique<setex_result>(Parser_Token::setex_key_op, "", split_result[1],
+                                                                                       time, ERObject(ObjectType::EREDIS_DOUBLE, (void *)&doubleValue));
+                    return res;
+                } else{
+                    std::unique_ptr<setex_result> res = std::make_unique<setex_result>(Parser_Token::setex_key_op, "", split_result[1],
+                                                                                       time,ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]));
+                    return res;
+                }
+            } catch (std::exception) {
                 std::unique_ptr<setex_result> res = std::make_unique<setex_result>(Parser_Token::setex_key_op, "", split_result[1],
-                                                                                   std::stoi(split_result[2]),ERObject(ObjectType::EREDIS_INT, (void *)&intvalue));
-                return res;
-            } else if (isDouble(split_result[3].c_str())){
-                double doubleValue= std::stod(split_result[3]);
-                std::unique_ptr<setex_result> res = std::make_unique<setex_result>(Parser_Token::setex_key_op, "", split_result[1],
-                                                                                   std::stoi(split_result[2]), ERObject(ObjectType::EREDIS_DOUBLE, (void *)&doubleValue));
-                return res;
-            } else{
-                std::unique_ptr<setex_result> res = std::make_unique<setex_result>(Parser_Token::setex_key_op, "", split_result[1],
-                                                                                   std::stoi(split_result[2]),ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]));
+                                                                                   time,ERObject(ObjectType::EREDIS_STRING, (void *)&split_result[2]));
                 return res;
             }
         } else{

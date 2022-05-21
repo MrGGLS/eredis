@@ -150,12 +150,21 @@ std::string Controller::run(std::string input)
         } else
             return "save failed";
     }
+        case Parser_Token::syntax_error:{
+            return "UNKOWN COMMAND";
 
+        }
+        case Parser_Token::arguments_error:{
+            return "ERR wrong number of arguments";
+        }
+        case Parser_Token::no_vaild_error:{
+            return "Invalid argument(s)";
+        }
     default:
         // TODO: ERROR
         break;
     }
-    return "UNKOWN COMMAND";
+    return "syntax error";
 }
 
 Controller::Controller()
