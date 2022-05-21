@@ -1,4 +1,109 @@
 import socket
+import json
+
+
+def helpkeyFunction():
+    print('         \"key *\" for all keys in databases')
+    print('         \"exists [key]\" for check if key exists')
+    print('         \"del [key]\" for delete the key')
+    print('         \"type [key]\" for type of the key')
+    print('         \"dbsize\" for check the number of keys in databases')
+    print('         \"flushdb\" for clear current databases')
+    print('         \"flushall\" for clear all databases')
+    print('         \"select [n]\" for enter the n-th databases (16 maximum)')
+
+
+def helpStringFunction():
+    print('         \"set [key] [value]\" for append key-value')
+    print('         \"get [key]\" for get the value of key')
+    print('         \"strlen [key]\" for get the length of value')
+    print('         \"append [key] [value]\" for append value based on original one, return length in total')
+    print('         \"getrange [key] [value] [start] [end]\" for get value[start:end]')
+    print('         \"incr [key]\" for increase the value by 1')
+    print('         \"decr [key]\" for decrease the value by 1')
+
+
+def helplistFunction():
+    print('         \"lpush/rpush [key] [value1] [value2] ... \" for insert v in left or right of k')
+    print('         \"lrange [key] [start] [end]\" to get data in range [start:end] (You can use 0 for the first, -1 for the last)')
+    print('         \"lpop/rpop [key]\" for get value left or right from key (Mind that key will be deleted after retrieve)')
+    print('         \"lindex [key] [value]\" for value by index')
+    print('         \"llen [key]\" for length of list')
+    print('         \"lset [key] [index] [value]\" for replace value of index')
+
+
+def helpsaveFunction():
+    print('         \"save\" for save the data')
+
+
+def helpFunction():
+    print('To get help about ERedis command type:')
+    print('     \"help key\" to get help for key command')
+    print('     \"help String\" to get help for String command')
+    print('     \"help list\" to get help for list command')
+    print('     \"help save\" for get help for save command')
+    print('     \"quit\" to exit')
+
+    while True:
+        helpString = input('EasyRedis(help)>')
+
+        if helpString == 'quit':
+            break
+
+        elif helpString == 'help key':
+            helpkeyFunction()
+
+        elif helpString == 'help String':
+            helpStringFunction()
+
+        elif helpString == 'help list':
+            helplistFunction()
+
+        elif helpString == 'help save':
+            helpsaveFunction()
+
+        else:
+            print('No such command')
+
+
+def processMessage(data):
+
+     response_type = data['type']
+     response_message = data['message']
+
+     global promoptString
+
+     if response_type == 0:
+         print('No such command or syntax error, you could type \"help\" for more instructions')
+
+     elif response_type == 1:
+         print('Key already exists, you could using key command to check existence, see more in \"help\" command')
+
+     elif response_type == 2:
+         print('Key does not exist, you could using key command to check existence, see more in \"help\" command')
+
+     elif response_type == 3:
+         print('Out of index, you could check boundaries using length command, see more in \"help\" command')
+
+     elif response_type == 4:
+         print('Types incompatible, you could check the type using type command, see more in \"help\" command')
+
+     elif response_type == 5:
+         print('Success!')
+
+     elif response_type == 6:
+         promoptString = 'EasyRedis ' + '[' + str(response_message) + ']>'
+
+     elif response_type == 10:
+         if response_message == '1':
+             print('exists')
+         else:
+             print('None')
+
+     else:
+         print(response_message)
+
+
 
 
 def printFunction():
@@ -8,7 +113,9 @@ def printFunction():
     print('|  __| |  _  // _ \/ _` | / __|')
     print('| |____| | \ \  __/ (_| | \__\\')
     print('|______|_|  \_\___|\__,_|_|___/')
-    print('connection success! Initiating your configuration.... ')
+    print('Connection success! Initiating your configuration.... ')
+    print('Initiating complete! 16 databases available.')
+    print('You can type \"help\" to get more instructions.')
 
 
 def exitFunction():
@@ -30,25 +137,34 @@ if __name__ == '__main__':
 
     printFunction()
 
+    global promoptString
     promoptString = 'EasyRedis>'
-    recv_data = sender.recv(1024)
-    print(recv_data.decode('utf-8'))
-    # print("\033[0;31;40m"+recv_data.decode('utf-8')+'\033[0m')
-
+    # recv_data = json.loads(sender.recv(1024).decode('utf-8'))
+    recv_data = sender.recv(1024).decode('utf-8')
+    print(recv_data)
     while True:
         string = input(promoptString)
 
-        if string == 'exit':
+        if string == 'quit':
             exitFunction()
             break
 
+        if string == 'help':
+            helpFunction()
+            continue
+
+
+        if len(string) == 0:
+            continue
 
         '''
         具体逻辑
         '''
 
-        sender.send(string.encode('utf-8'))  
-        recv_data = sender.recv(1024)
-        print(recv_data.decode('utf-8'))
-        # print("\033[0;31;40m"+recv_data.decode('utf-8')+'\033[0m')
+        sender.send(string.encode('utf-8'))
+
+        recv_data = sender.recv(1024).decode('utf-8')
+        print(recv_data)
+        # processMessage(recv_data)
+
 

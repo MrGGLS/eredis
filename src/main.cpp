@@ -202,7 +202,7 @@ void event_loop()
 #endif
 
                 int bytes_in = recv(sock, buffer, BUFFER_LEN, 0);
-                assert(bytes_in > 0);
+//                assert(bytes_in > 0);
                 std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
                 if (controller.server.clients.count(sock) <= 0 || bytes_in <= 0) {
 #ifdef _WIN32
