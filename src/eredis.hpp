@@ -105,6 +105,9 @@ struct ERedisServer {
     std::mutex *key_mtx;
     std::mutex *cli_mtx;
 
+    /* inner operations (can't be used by user) */
+    std::vector<std::string> get_all_expire_keys(int db_id);
+    std::vector<int> get_all_idle_clients();
     /* common operations */
     std::string get_all_keys(int db_id);
     std::string exists_key(int db_id, std::string key);
