@@ -1,9 +1,14 @@
-//
-// Created by 86136 on 2022/5/16.
-//
+/**
+ * Controller
+ *
+ * @authors Xiao Jianwei
+ *          Zhang Jing
+ *          Mr.GGLS
+ */
+
 #include "controller.h"
 #include "erdb.hpp"
-// Controller::Controller() {}
+
 std::string Controller::run(std::string input)
 {
     parser.setInput(input);
@@ -144,27 +149,25 @@ std::string Controller::run(std::string input)
         return server.ttl(client->db_id, key);
     }
     case Parser_Token::save_op: {
-        //           auto parser_res = dynamic_cast<save_result *>(parser_result.get());
         if (save_data(&server)) {
             return "save succeed";
         } else
             return "save failed";
     }
-        case Parser_Token::syntax_error:{
-            return "UNKOWN COMMAND";
-
-        }
-        case Parser_Token::arguments_error:{
-            return "ERR wrong number of arguments";
-        }
-        case Parser_Token::no_vaild_error:{
-            return "Invalid argument(s)";
-        }
+    case Parser_Token::syntax_error: {
+        return "syntax error";
+    }
+    case Parser_Token::arguments_error: {
+        return "ERR wrong number of arguments";
+    }
+    case Parser_Token::no_vaild_error: {
+        return "Invalid argument(s)";
+    }
     default:
         // TODO: ERROR
         break;
     }
-    return "syntax error";
+    return "Unknown Command";
 }
 
 Controller::Controller()

@@ -1,6 +1,10 @@
-//
-// Created by Mr.GGLS on 2022/5/20.
-//
+/**
+ * Utils: basic utils include string and log
+ *
+ * @authors Mr.GGLS
+ *          Zhang Jing
+ */
+
 #include "utils.hpp"
 #include <iostream>
 #include <sstream>
@@ -34,20 +38,41 @@ std::string format_time()
 void log_err(std::string str)
 {
     auto stime = format_time();
-    std::cout << "\x1b[31m"
-              << "[ERROR|" << stime << "] " << str << "\x1b[0m";
+    std::cout
+#ifdef __APPLE__
+        << "\x1b[31m"
+#endif
+        << "[ERROR|" << stime << "] " << str
+#ifdef __APPLE__
+        << "\x1b[0m"
+#endif
+        ;
 }
 
 void log_system(std::string str)
 {
     auto stime = format_time();
-    std::cout << "\x1b[36m"
-              << "[SYSTEM|" << stime << "] " << str << "\x1b[0m";
+    std::cout
+#ifdef __APPLE__
+        << "\x1b[36m"
+#endif
+        << "[SYSTEM|" << stime << "] " << str
+#ifdef __APPLE__
+        << "\x1b[0m"
+#endif
+        ;
 }
 
 void log_warn(std::string str)
 {
     auto stime = format_time();
-    std::cout << "\x1b[33m"
-              << "[WARN|" << stime << "] " << str << "\x1b[0m";
+    std::cout
+#ifdef __APPLE__
+        << "\x1b[33m"
+#endif
+        << "[WARN|" << stime << "] " << str
+#ifdef __APPLE__
+        << "\x1b[0m"
+#endif
+        ;
 }

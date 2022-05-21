@@ -282,7 +282,6 @@ std::string ERedisServer::lpush(int db_id, std::string key, ERObject erObject)
         edb->dict[key] = erObject;
         return REDIS_OK;
     }
-    return REDIS_FAIL;
 }
 std::string ERedisServer::rpush(int db_id, std::string key, ERObject erObject)
 {

@@ -28,16 +28,31 @@ void testInt_Double(ERedisServer &server);
 void testSave();
 [[noreturn]] void event_loop();
 
+static const auto LOGO = {
+    "▓█████  ██▀███    ██████ ▓█████  ██▀███   ██▒   █▓▓█████  ██▀███\n"
+    "▓█   ▀ ▓██ ▒ ██▒▒██    ▒ ▓█   ▀ ▓██ ▒ ██▒▓██░   █▒▓█   ▀ ▓██ ▒ ██▒\n"
+    "▒███   ▓██ ░▄█ ▒░ ▓██▄   ▒███   ▓██ ░▄█ ▒ ▓██  █▒░▒███   ▓██ ░▄█ ▒\n"
+    "▒▓█  ▄ ▒██▀▀█▄    ▒   ██▒▒▓█  ▄ ▒██▀▀█▄    ▒██ █░░▒▓█  ▄ ▒██▀▀█▄\n"
+    "░▒████▒░██▓ ▒██▒▒██████▒▒░▒████▒░██▓ ▒██▒   ▒▀█░  ░▒████▒░██▓ ▒██▒\n"
+    "░░ ▒░ ░░ ▒▓ ░▒▓░▒ ▒▓▒ ▒ ░░░ ▒░ ░░ ▒▓ ░▒▓░   ░ ▐░  ░░ ▒░ ░░ ▒▓ ░▒▓░\n"
+    "░ ░  ░  ░▒ ░ ▒░░ ░▒  ░ ░ ░ ░  ░  ░▒ ░ ▒░   ░ ░░   ░ ░  ░  ░▒ ░ ▒░\n"
+    "░     ░░   ░ ░  ░  ░     ░     ░░   ░      ░░     ░     ░░   ░\n"
+    "░  ░   ░           ░     ░  ░   ░           ░     ░  ░   ░\n"
+    "░\n"
+};
+
 void logo()
 {
     std::cout << "\n";
-    std::ifstream fs;
-    std::string pwd;
-    fs.open("/Users/mrzleo/easy-redis/logo.txt");
-    std::string s;
-    while (std::getline(fs, s)) {
-        std::cout << s << std::endl;
+#ifdef __APPLE__
+    std::cout << "\x1b[36m";
+#endif
+    for (auto iter : LOGO) {
+        std::cout << iter;
     }
+#ifdef __APPLE__
+    std::cout << "\x1b[0m";
+#endif
     std::cout << "\n";
     std::cout << "<host>: 127.0.0.1\n"
               << "<port>: " << SERVER_PORT
@@ -46,7 +61,7 @@ void logo()
 
 int main(int argc, char **argv)
 {
-    /* logo(); */
+    logo();
     event_loop();
 }
 
@@ -217,7 +232,7 @@ void event_loop()
                     kevent(kq, &del_event, 1, NULL, 0, NULL);
 #endif
                     std::stringstream ss;
-                    ss << "connect to client <host>: " << controller.server.clients[sock]->hostname
+                    ss << "Disconnect to client <host>: " << controller.server.clients[sock]->hostname
                        << " <port>: " << controller.server.clients[sock]->port
                        << std::endl;
                     log_warn(ss.str());
@@ -229,30 +244,30 @@ void event_loop()
                     auto res = controller.run(std::string(buffer));
                     std::cout << "result after executing:\n"
                               << res << std::endl;
-                    if (to_upper(res) == REDIS_EXIT) {
-                        std::lock_guard<std::mutex> lg2(*(controller.server.cli_mtx));
-#ifdef _WIN32
-                        closesocket(sock);
-                        FD_CLR(sock, &master);
-#elif __APPLE__
-                        close(sock);
-                        struct kevent del_event;
-                        EV_SET(&del_event, sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-                        kevent(kq, &del_event, 1, NULL, 0, NULL);
-#endif
-                        std::stringstream ss;
-                        ss << "connect to client <host>: " << controller.server.clients[sock]->hostname
-                           << " <port>: " << controller.server.clients[sock]->port
-                           << std::endl;
-                        log_warn(ss.str());
-                        controller.server.clients.erase(sock);
-                    } else {
-                        nlohmann::json j;
-                        j["type"] = 6;
-                        j["message"] = res.c_str();
-                        std::cout << j << std::endl;
-                        send(sock, j.dump().c_str(), j.dump().length(), 0);
-                    }
+                    // if (to_upper(res) == REDIS_EXIT) {
+                    //     std::lock_guard<std::mutex> lg2(*(controller.server.cli_mtx));
+                    //#ifdef _WIN32
+                    //     closesocket(sock);
+                    //     FD_CLR(sock, &master);
+                    //#elif __APPLE__
+                    //     close(sock);
+                    //     struct kevent del_event;
+                    //     EV_SET(&del_event, sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    //     kevent(kq, &del_event, 1, NULL, 0, NULL);
+                    //#endif
+                    //     std::stringstream ss;
+                    //     ss << "Disconnect to client <host>: " << controller.server.clients[sock]->hostname
+                    //     << " <port>: " << controller.server.clients[sock]->port
+                    //     << std::endl;
+                    //     log_warn(ss.str());
+                    //     controller.server.clients.erase(sock);
+                    //     } else {
+                    nlohmann::json j;
+                    j["type"] = 6;
+                    j["message"] = res.c_str();
+                    std::cout << j << std::endl;
+                    send(sock, j.dump().c_str(), j.dump().length(), 0);
+                    //    }
                 }
             }
         }
