@@ -267,10 +267,11 @@ std::string ERedisServer::lpush(int db_id, std::string key, ERObject erObject)
     if (edb->expires.count(key) && edb->expires[key] < time(0))
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
+    if (edb->dict[key].get_type() != ObjectType::EREDIS_LIST){
+        return REDIS_FAIL;
+    }
     if (edb->dict.count(key) > 0) {
         auto tmp = erObject.get_list();
-        if (edb->dict[key].get_type() != ObjectType::EREDIS_LIST)
-            edb->dict[key].as_list();
         std::vector<std::string> new_list = edb->dict[key].get_list();
         for (int i = tmp.size() - 1; i >= 0; i--) {
             new_list.insert(new_list.begin(), tmp[i]);
@@ -289,10 +290,11 @@ std::string ERedisServer::rpush(int db_id, std::string key, ERObject erObject)
     if (edb->expires.count(key) && edb->expires[key] < time(0))
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
+    if (edb->dict[key].get_type() != ObjectType::EREDIS_LIST){
+        return REDIS_FAIL;
+    }
     if (edb->dict.count(key) > 0) {
         auto tmp = erObject.get_list();
-        if (edb->dict[key].get_type() != ObjectType::EREDIS_LIST)
-            edb->dict[key].as_list();
         auto new_list = edb->dict[key].get_list();
         new_list.insert(new_list.end(), tmp.begin(), tmp.end());
         edb->dict[key].set_list(new_list);
@@ -423,7 +425,8 @@ std::string ERedisServer::set_expire(int db_id, std::string key, int secs)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key)) {
-        edb->expires.insert({ key, time(0) + secs });
+        edb->expires[key]=time(0)+secs;
+//        edb->expires.insert({ key, time(0) + secs });
         return REDIS_OK;
     }
     return REDIS_FAIL;
