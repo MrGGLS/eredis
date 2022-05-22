@@ -111,8 +111,8 @@ void event_loop()
     /* init key expire thread and client exit thread */
     std::thread check_keys_thread(clear_invalid_keys, &controller.server);
     check_keys_thread.detach();
-    /* std::thread check_clients_thread(clear_idle_clients, &controller.server); */
-    /* check_clients_thread.detach(); */
+    std::thread check_clients_thread(clear_idle_clients, &controller.server);
+    check_clients_thread.detach();
 
 #ifdef __APPLE__
     int kq = kqueue();
@@ -225,6 +225,12 @@ void event_loop()
                 int bytes_in = recv(sock, buffer, BUFFER_LEN, 0);
                 //                assert(bytes_in > 0);
                 std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
+                /* we should update client's last interaction in time */
+                if (controller.server.clients.count(sock)) {
+                    controller.server.clients[sock]->last_interaction = time(0);
+                }
+                /* the client might be deleted by timeout or something bad happened
+                 * so we close them. */
                 if (controller.server.clients.count(sock) <= 0 || bytes_in <= 0) {
 #ifdef _WIN32
                     closesocket(sock);

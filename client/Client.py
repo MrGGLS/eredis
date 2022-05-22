@@ -91,7 +91,7 @@ def processMessage(data):
 
     elif response_type == 2:
         response_value = data['value']
-        if str(response_value) == '1' or str(response_value) == '0':
+        if str(response_value) == '0':
             return
 
         print(response_message)
