@@ -63,6 +63,7 @@ int main(int argc, char **argv)
 {
     logo();
     event_loop();
+    //    testSave();
 }
 
 void event_loop()
@@ -106,6 +107,12 @@ void event_loop()
     /* init controller*/
     Controller controller;
     load_data(&(controller.server));
+
+    /* init key expire thread and client exit thread */
+    std::thread check_keys_thread(clear_invalid_keys, &controller.server);
+    check_keys_thread.detach();
+    /* std::thread check_clients_thread(clear_idle_clients, &controller.server); */
+    /* check_clients_thread.detach(); */
 
 #ifdef __APPLE__
     int kq = kqueue();
@@ -233,6 +240,7 @@ void event_loop()
                        << " <port>: " << controller.server.clients[sock]->port
                        << std::endl;
                     log_warn(ss.str());
+                    save_data(&controller.server);
                     controller.server.clients.erase(sock);
                 } else {
                     std::cout << "from client [" << sock << "] received command: " << buffer << std::endl;
@@ -411,10 +419,10 @@ void testServer(ERedisServer &server)
 
     //    auto server = ERedisServer();
 
-    //    std::thread check_keys_thread(clear_invalid_keys,&server);
-    //    check_keys_thread.detach();
-    //    std::thread check_clients_thread(clear_idle_clients,&server);
-    //    check_clients_thread.detach();
+    //        std::thread check_keys_thread(clear_invalid_keys,&server);
+    //        check_keys_thread.detach();
+    //        std::thread check_clients_thread(clear_idle_clients,&server);
+    //        check_clients_thread.detach();
 
     std::string *value = new std::string("hehe");
     ERObject object = ERObject(ObjectType::EREDIS_STRING, (void *)value);
