@@ -519,7 +519,7 @@ std::vector<int> ERedisServer::get_all_idle_clients()
             }
         }
         server->cli_mtx->unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-//        std::this_thread::sleep_for(std::chrono::milliseconds(EREDIS_DEFAULT_DEL_CLIENT_INTERVAL));
+//        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(EREDIS_DEFAULT_DEL_CLIENT_INTERVAL));
     }
 }
