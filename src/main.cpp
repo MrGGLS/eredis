@@ -204,10 +204,7 @@ void event_loop()
                     std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
                     controller.server.clients[new_client] = new_eclient;
                     std::string msg = "Welcome to ERedis server!";
-                    nlohmann::json j;
-                    j["type"] = 5;
-                    j["message"] = msg.c_str();
-                    send(new_client, j.dump().c_str(), j.dump().length(), 0);
+                    send(new_client, msg.c_str(), msg.size(), 0);
                 }
             } else {
 
@@ -262,11 +259,7 @@ void event_loop()
                     //     log_warn(ss.str());
                     //     controller.server.clients.erase(sock);
                     //     } else {
-                    nlohmann::json j;
-                    j["type"] = 6;
-                    j["message"] = res.c_str();
-                    std::cout << j << std::endl;
-                    send(sock, j.dump().c_str(), j.dump().length(), 0);
+                    send(sock, res.c_str(), res.size(), 0);
                     //    }
                 }
             }

@@ -6,6 +6,7 @@
 #define EASY_REDIS_EREDIS_HPP
 
 #include "erobject.h"
+#include "iostream"
 #include <chrono>
 #include <ctime>
 #include <mutex>
@@ -13,7 +14,6 @@
 #include <thread>
 #include <unordered_map>
 #include <vector>
-#include "iostream"
 
 /*error codes*/
 #define REDIS_OK "OK"
@@ -34,6 +34,11 @@
 #define EREDIS_DEFAULT_DEL_INTERVAL 1000 // default check keys validity interval
 #define EREDIS_DEFAULT_DEL_CLIENT_INTERVAL 1000 // default check client's validity interval
 #define EREDIS_DEFAULT_CLIENT_TIMEOUT (5 * 60) // client max idle time
+
+/* client-server return code */
+#define SERVER_SYNTAX_ERR 0
+#define SERVER_EXEC_RETURN 1
+#define SERVER_EXEC_CHANGE_DB 2
 
 struct ERedisDb {
     ERedisDb(int id);

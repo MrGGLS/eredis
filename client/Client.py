@@ -1,5 +1,8 @@
 import socket
 import json
+from prompt_toolkit import PromptSession
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.completion import WordCompleter
 
 
 def helpkeyFunction():
@@ -11,6 +14,9 @@ def helpkeyFunction():
     print('         \"flushdb\" for clear current databases')
     print('         \"flushall\" for clear all databases')
     print('         \"select [n]\" for enter the n-th databases (16 maximum)')
+    print('         \"expire [key] [time]\" for set the expire time (seconds) for key')
+    print('         \"setex [key] [time] [v]\" for set the expire time (seconds) for key while set the key')
+    print('         \"ttl [key]\" for check expire time for key')
 
 
 def helpStringFunction():
@@ -25,8 +31,10 @@ def helpStringFunction():
 
 def helplistFunction():
     print('         \"lpush/rpush [key] [value1] [value2] ... \" for insert v in left or right of k')
-    print('         \"lrange [key] [start] [end]\" to get data in range [start:end] (You can use 0 for the first, -1 for the last)')
-    print('         \"lpop/rpop [key]\" for get value left or right from key (Mind that key will be deleted after retrieve)')
+    print(
+        '         \"lrange [key] [start] [end]\" to get data in range [start:end] (You can use 0 for the first, -1 for the last)')
+    print(
+        '         \"lpop/rpop [key]\" for get value left or right from key (Mind that key will be deleted after retrieve)')
     print('         \"lindex [key] [value]\" for value by index')
     print('         \"llen [key]\" for length of list')
     print('         \"lset [key] [index] [value]\" for replace value of index')
@@ -44,8 +52,10 @@ def helpFunction():
     print('     \"help save\" for get help for save command')
     print('     \"quit\" to exit')
 
+    global session
+
     while True:
-        helpString = input('EasyRedis(help)> ')
+        helpString = session.prompt('EasyRedis(help)> ')
 
         if helpString == 'quit':
             break
@@ -67,44 +77,25 @@ def helpFunction():
 
 
 def processMessage(data):
+    response_type = data['type']
+    response_message = data['message']
 
-     response_type = data['type']
-     response_message = data['message']
+    global promoptString
 
-     global promoptString
+    if response_type == 0:
+        print('No such command or syntax error, you could type \"help\" for more instructions')
+        print('Error Type: ' + response_message)
 
-     if response_type == 0:
-         print('No such command or syntax error, you could type \"help\" for more instructions')
+    elif response_type == 1:
+        print(response_message)
 
-     elif response_type == 1:
-         print('Key already exists, you could using key command to check existence, see more in \"help\" command')
+    elif response_type == 2:
+        response_value = data['value']
+        if str(response_value) == '1' or str(response_value) == '0':
+            return
 
-     elif response_type == 2:
-         print('Key does not exist, you could using key command to check existence, see more in \"help\" command')
-
-     elif response_type == 3:
-         print('Out of index, you could check boundaries using length command, see more in \"help\" command')
-
-     elif response_type == 4:
-         print('Types incompatible, you could check the type using type command, see more in \"help\" command')
-
-     elif response_type == 5:
-         print('Success!')
-
-     elif response_type == 6:
-         promoptString = 'EasyRedis> '
-         print(response_message)
-
-     elif response_type == 10:
-         if response_message == '1':
-             print('exists')
-         else:
-             print('None')
-
-     else:
-         print(response_message)
-
-
+        print(response_message)
+        promoptString = 'EasyRedis ' + '[' + str(response_value) + ']> '
 
 
 def printFunction():
@@ -140,11 +131,25 @@ if __name__ == '__main__':
 
     global promoptString
     promoptString = 'EasyRedis> '
-    recv_data = json.loads(sender.recv(1024).decode('utf-8'))
-    # recv_data = sender.recv(1024).decode('utf-8')
-    print(recv_data['message'])
+
+    session = PromptSession()
+
+    redisCompleter = WordCompleter(
+        ['select', 'key', 'save', 'keys', 'type', 'del', 'dbsize', 'flushdb',
+         'exists', 'flushall', 'expire', 'setex', 'ttl', 'set', 'get', 'strlen',
+         'append', 'getrange', 'incr', 'decr', 'lpush', 'rpush', 'lrange', 'lpop',
+         'rpop', 'lindex', 'llen', 'lset'])
+
+    # get welcome message
+    recv_data = sender.recv(1024).decode('utf-8')
+    print(recv_data)
+
     while True:
-        string = input(promoptString)
+
+        string = session.prompt(promoptString, completer=redisCompleter, auto_suggest=AutoSuggestFromHistory())
+
+        if len(string) == 0:
+            continue
 
         if string == 'quit':
             exitFunction()
@@ -154,19 +159,12 @@ if __name__ == '__main__':
             helpFunction()
             continue
 
-
-        if len(string) == 0:
-            continue
-
         '''
         具体逻辑
         '''
 
         sender.send(string.encode('utf-8'))
 
-        # print(sender.recv(1024).decode('utf-8'))
         recv_data = json.loads(sender.recv(1024).decode('utf-8'))
-        # print(recv_data)
+
         processMessage(recv_data)
-
-
