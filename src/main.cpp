@@ -11,6 +11,7 @@
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
+#include <windows.h>
 #pragma comment(lib, "ws2_32.lib")
 #elif __APPLE__
 #include <arpa/inet.h>
@@ -55,8 +56,9 @@ int main(int argc, char **argv)
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGABRT, signal_handler);
+#ifdef __APPLE__
     signal(SIGKILL, signal_handler);
-
+#endif;
     /* start */
     event_loop();
 

@@ -137,6 +137,8 @@ std::string ERedisServer::flushall()
 
 std::string ERedisServer::select_db(int db_id, int client_id)
 {
+    if(db_id>=db_num||db_id<0)
+        return REDIS_FAIL;
     ERedisClient *client = (this->clients[client_id]);
     client->db_id = db_id;
     return REDIS_OK;
