@@ -53,6 +53,9 @@ int main(int argc, char **argv)
 
     /* handle signal, save data before exit */
     signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGABRT, signal_handler);
+    signal(SIGKILL, signal_handler);
 
     /* start */
     event_loop();
@@ -279,7 +282,8 @@ void logo()
               << std::endl;
 }
 
-void signal_handler(int signum) {
+void signal_handler(int signum)
+{
     log_warn("System Exit...\n");
     log_warn("Saving data...\n");
     save_data(&controller.server);
