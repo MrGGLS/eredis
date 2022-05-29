@@ -16,7 +16,7 @@ EasyRedis 是根据 Redis 进行设计的一款轻量级键值型数据库。
 4. 数据处理系统（doc/data-manage.md）
 5. 输入输出接口（doc/io-interface.md）
 
-![arch](https://raw.githubusercontent.com/MrZLeo/Image/main/uPic/2022/05/29/archshmRlT.png)
+![arch-2](https://raw.githubusercontent.com/MrZLeo/Image/main/uPic/2022/05/29/arch-2uSjIDZ.png)
 
 ## 2 如何开发
 
