@@ -4,12 +4,14 @@
 #include "json.hpp"
 #include "utils.hpp"
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <string>
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
+#include <windows.h>
 #pragma comment(lib, "ws2_32.lib")
 #elif __APPLE__
 #include <arpa/inet.h>
@@ -20,13 +22,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #endif
-
-void testList(ERedisServer &server);
-void testExpire(ERedisServer &server);
-void testServer(ERedisServer &server);
-void testInt_Double(ERedisServer &server);
-void testSave();
-[[noreturn]] void event_loop();
 
 static const auto LOGO = {
     "▓█████  ██▀███    ██████ ▓█████  ██▀███   ██▒   █▓▓█████  ██▀███\n"
@@ -41,29 +36,34 @@ static const auto LOGO = {
     "░\n"
 };
 
-void logo()
-{
-    std::cout << "\n";
-#ifdef __APPLE__
-    std::cout << "\x1b[36m";
-#endif
-    for (auto iter : LOGO) {
-        std::cout << iter;
-    }
-#ifdef __APPLE__
-    std::cout << "\x1b[0m";
-#endif
-    std::cout << "\n";
-    std::cout << "<host>: 127.0.0.1\n"
-              << "<port>: " << SERVER_PORT
-              << std::endl;
-}
+/* init controller as a static object */
+Controller controller;
+
+void testList(ERedisServer &server);
+void testExpire(ERedisServer &server);
+void testServer(ERedisServer &server);
+void testInt_Double(ERedisServer &server);
+void testSave();
+void logo();
+void signal_handler(int signnum);
+[[noreturn]] void event_loop();
 
 int main(int argc, char **argv)
 {
     logo();
+
+    /* handle signal, save data before exit */
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGABRT, signal_handler);
+#ifdef __APPLE__
+    signal(SIGKILL, signal_handler);
+#endif;
+    /* start */
     event_loop();
-    //    testSave();
+
+    /* test */
+    /* testSave(); */
 }
 
 void event_loop()
@@ -105,16 +105,16 @@ void event_loop()
     listen(server_socket, MAX_BACKLOG);
 
     /* init controller*/
-    Controller controller;
     load_data(&(controller.server));
 
     /* init key expire thread and client exit thread */
     std::thread check_keys_thread(clear_invalid_keys, &controller.server);
     check_keys_thread.detach();
-    /* std::thread check_clients_thread(clear_idle_clients, &controller.server); */
-    /* check_clients_thread.detach(); */
+    std::thread check_clients_thread(clear_idle_clients, &controller.server);
+    check_clients_thread.detach();
 
 #ifdef __APPLE__
+    /* use kqueue in macOS */
     int kq = kqueue();
     struct kevent changes;
     EV_SET(&changes, server_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
@@ -225,6 +225,12 @@ void event_loop()
                 int bytes_in = recv(sock, buffer, BUFFER_LEN, 0);
                 //                assert(bytes_in > 0);
                 std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
+                /* we should update client's last interaction in time */
+                if (controller.server.clients.count(sock)) {
+                    controller.server.clients[sock]->last_interaction = time(0);
+                }
+                /* the client might be deleted by timeout or something bad happened
+                 * so we close them. */
                 if (controller.server.clients.count(sock) <= 0 || bytes_in <= 0) {
 #ifdef _WIN32
                     closesocket(sock);
@@ -249,26 +255,7 @@ void event_loop()
                     auto res = controller.run(std::string(buffer));
                     std::cout << "result after executing:\n"
                               << res << std::endl;
-                    // if (to_upper(res) == REDIS_EXIT) {
-                    //     std::lock_guard<std::mutex> lg2(*(controller.server.cli_mtx));
-                    //#ifdef _WIN32
-                    //     closesocket(sock);
-                    //     FD_CLR(sock, &master);
-                    //#elif __APPLE__
-                    //     close(sock);
-                    //     struct kevent del_event;
-                    //     EV_SET(&del_event, sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-                    //     kevent(kq, &del_event, 1, NULL, 0, NULL);
-                    //#endif
-                    //     std::stringstream ss;
-                    //     ss << "Disconnect to client <host>: " << controller.server.clients[sock]->hostname
-                    //     << " <port>: " << controller.server.clients[sock]->port
-                    //     << std::endl;
-                    //     log_warn(ss.str());
-                    //     controller.server.clients.erase(sock);
-                    //     } else {
                     send(sock, res.c_str(), res.size(), 0);
-                    //    }
                 }
             }
         }
@@ -279,6 +266,34 @@ void event_loop()
 #endif
 }
 
+void logo()
+{
+    std::cout << "\n";
+#ifdef __APPLE__
+    std::cout << "\x1b[36m";
+#endif
+    for (auto iter : LOGO) {
+        std::cout << iter;
+    }
+#ifdef __APPLE__
+    std::cout << "\x1b[0m";
+#endif
+    std::cout << "\n";
+    std::cout << "<host>: 127.0.0.1\n"
+              << "<port>: " << SERVER_PORT
+              << std::endl;
+}
+
+void signal_handler(int signum)
+{
+    log_warn("System Exit...\n");
+    log_warn("Saving data...\n");
+    save_data(&controller.server);
+    log_warn("Bye\n");
+    exit(signum);
+}
+
+/* <--------------------------- Test -------------------------------------->*/
 void testSave()
 {
     auto server = ERedisServer();

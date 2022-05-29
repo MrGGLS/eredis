@@ -109,12 +109,17 @@ bool save_data(ERedisServer *server, std::string base_path)
 
 bool load_data(ERedisServer *server, std::string base_path)
 {
-    server->db.clear();
     /* check data integrity */
     std::ifstream reader(base_path + ERDB_FILENAME, std::ios::in | std::ios::binary | std::ios::ate);
     if (reader.bad())
         return false;
     int len = reader.tellg();
+    /* that means no dump.erdb available */
+    if(len<1){
+        reader.close();
+        return true;
+    }
+    server->db.clear();
     len -= CHECK_SUM_LEN;
     char buffer[len];
     reader.seekg(0);

@@ -137,6 +137,8 @@ std::string ERedisServer::flushall()
 
 std::string ERedisServer::select_db(int db_id, int client_id)
 {
+    if(db_id>=db_num||db_id<0)
+        return REDIS_FAIL;
     ERedisClient *client = (this->clients[client_id]);
     client->db_id = db_id;
     return REDIS_OK;
@@ -487,10 +489,18 @@ std::vector<int> ERedisServer::get_all_idle_clients()
     while (true) {
         for (const auto &edb : server->db) {
             std::vector<std::string> should_del_keys = server->get_all_expire_keys(edb->id);
-            std::lock_guard<std::mutex> lg(*(server->key_mtx));
-            for(auto del_k:should_del_keys){
-                server->del_key(edb->id,del_k);
+            /* for data safety consideration, we don't directly use del_key function here */
+//            std::lock_guard<std::mutex> lg(*(server->key_mtx));
+            if(server->key_mtx->try_lock()){
+                for(auto del_k:should_del_keys){
+                    if (edb->dict.count(del_k)) {
+                        edb->dict.erase(del_k);
+                        edb->expires.erase(del_k);
+                    }
+                    //                server->del_key(edb->id,del_k);
+                }
             }
+            server->key_mtx->unlock();
         }
         //        std::cout<<"hehe................."<<std::endl;
         //        std::this_thread::sleep_for(std::chrono::milliseconds (100));
@@ -502,10 +512,16 @@ std::vector<int> ERedisServer::get_all_idle_clients()
 {
     while (true) {
         std::vector<int> should_del_clients=server->get_all_idle_clients();
-        std::lock_guard<std::mutex> lg(*(server->cli_mtx));
-        for(auto idle_cli:should_del_clients){
-            server->clients.erase(idle_cli);
+        /* For saving our resources for serving more clients, we will clear those
+         * who are idle for max timeout interval... */
+//        std::lock_guard<std::mutex> lg(*(server->cli_mtx));
+        if(server->cli_mtx->try_lock()){
+            for(auto idle_cli:should_del_clients){
+                server->clients.erase(idle_cli);
+            }
         }
+        server->cli_mtx->unlock();
+//        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         std::this_thread::sleep_for(std::chrono::milliseconds(EREDIS_DEFAULT_DEL_CLIENT_INTERVAL));
     }
 }
