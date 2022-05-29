@@ -94,3 +94,10 @@ EasyRedis 是根据 Redis 进行设计的一款轻量级键值型数据库。
 ### 数据保存
 
 1. `save`: 保存数据
+
+
+## contributors
+<a href="https://gitee.com/zlarin/easy-redis/graph/master"><img src="https://opencollective.com/easy-redis/contributors.svg?width=890&button=false"/></a>
+
+## How to contribute
+
