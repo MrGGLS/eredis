@@ -242,11 +242,17 @@ void event_loop()
                     kevent(kq, &del_event, 1, NULL, 0, NULL);
 #endif
                     std::stringstream ss;
-                    ss << "client exited, <host>: " << controller.server.clients[sock]->hostname
-                       << " <port>: " << controller.server.clients[sock]->port
-                       << std::endl;
-                    log_warn(ss.str());
-                    save_data(&controller.server);
+                    if (controller.server.clients.count(sock)) {
+                        ss << "client exited, <host>: " << controller.server.clients[sock]->hostname
+                           << " <port>: " << controller.server.clients[sock]->port
+                           << std::endl;
+                        log_warn(ss.str());
+                    } else {
+                        ss << "client [" << sock << "] exited" << std::endl;
+                        log_warn(ss.str());
+                    }
+                    /* don't need this feature */
+                    //                    save_data(&controller.server);
                     controller.server.clients.erase(sock);
                 } else {
                     std::stringstream ss;

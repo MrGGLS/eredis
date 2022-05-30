@@ -33,7 +33,7 @@
 #define EREDIS_DEFAULT_DB_NUM 16 // default db num
 #define EREDIS_DEFAULT_DEL_INTERVAL 60000 // default check keys validity interval
 #define EREDIS_DEFAULT_DEL_CLIENT_INTERVAL 6000 // default check client's validity interval
-#define EREDIS_DEFAULT_CLIENT_TIMEOUT (5 * 60) // client max idle time
+#define EREDIS_DEFAULT_CLIENT_TIMEOUT (5) // client max idle time
 
 /* client-server return code */
 #define SERVER_SYNTAX_ERR 0
