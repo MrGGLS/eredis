@@ -4,7 +4,10 @@
 #include "Parser.h"
 #include <unordered_map>
 #include <sstream>
-#define doule_e_support 0
+#include <algorithm>
+const int doule_e_support=0;
+const int quo_to_str_sup=0;
+
 /*
  * 目前存在未判定整数长度和浮点数长度是否合格bug
  * */
@@ -1213,6 +1216,7 @@ Parser_Token Parser::split()
 
                 } else if (' ' == input[quotation_pos + 1] && cur_quotation_pos > 0 && N % 2 == 0) {
                     std::string sub_input = input.substr(cur_quotation_pos + 1, quotation_pos - cur_quotation_pos - 1);
+                    sub_input='"'+sub_input;
                     split_result.push_back(sub_input);
                     i = quotation_pos + 1;
                     for (; i < size; ++i) {
@@ -1264,7 +1268,8 @@ Parser_Token Parser::split()
             }
         }
     }
-
+//转换大小写
+    transform(split_result[0].begin(),split_result[0].end(),split_result[0].begin(),::tolower);
     //    if (split_result[0] == "keys") {
     //        return Parser_Token::key_list_op;
     //    } else if (split_result[0] == "exists") {
