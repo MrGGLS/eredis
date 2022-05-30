@@ -50,14 +50,14 @@ def helpFunction():
     print('     \"help String\" to get help for String command')
     print('     \"help list\" to get help for list command')
     print('     \"help save\" for get help for save command')
-    print('     \"quit\" to exit')
+    print('     \"quit\"/\"q\"/\"exit\" to exit')
 
     global session
 
     while True:
         helpString = session.prompt('EasyRedis(help)> ')
 
-        if helpString == 'quit':
+        if helpString == 'quit' or helpString == 'q' or helpString == 'exit':
             break
 
         elif helpString == 'help key':
@@ -91,11 +91,12 @@ def processMessage(data):
 
     elif response_type == 2:
         response_value = data['value']
-        if str(response_value) == '0':
-            return
-
         print(response_message)
-        promoptString = 'EasyRedis ' + '[' + str(response_value) + ']> '
+
+        if str(response_value) == '0':
+            promoptString = 'EasyRedis> '
+        else:
+            promoptString = 'EasyRedis' + '[' + str(response_value) + ']> '
 
 
 def printFunction():
@@ -151,7 +152,7 @@ if __name__ == '__main__':
         if len(string) == 0:
             continue
 
-        if string == 'quit':
+        if string == 'quit' or string == 'exit' or string == 'q':
             exitFunction()
             break
 
