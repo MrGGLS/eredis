@@ -97,7 +97,8 @@ EasyRedis 是根据 Redis 进行设计的一款轻量级键值型数据库。
 
 
 ## contributors
-<a href="https://gitee.com/zlarin/easy-redis/graph/master"><img src="https://opencollective.com/easy-redis/contributors.svg?width=890&button=false"/></a>
+<a href="https://github.com/MrGGLS/eredis/graphs/contributors">
+<img src="https://opencollective.com/eredis/contributors.svg?width=890?avatarHeight=36&width=890&button=false"/></a>
 
 ## How to contribute
 
