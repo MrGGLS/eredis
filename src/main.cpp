@@ -59,6 +59,7 @@ int main(int argc, char **argv)
 #ifdef __APPLE__
     signal(SIGKILL, signal_handler);
 #endif
+
     /* start */
     event_loop();
 
@@ -82,7 +83,7 @@ void event_loop()
     SOCKET server_socket = socket(AF_INET, SOCK_STREAM, 0);
     SOCKET max_fd = server_socket;
     if (server_socket == INVALID_SOCKET) {
-        log_err("Sorry, can't create server socket....\n");
+        log_err("Sorry, can't create server socket....");
         signal_handler(-1);
     }
 
@@ -138,9 +139,9 @@ void event_loop()
 #endif
 
         if (client_num < 0) {
-            log_err("client num < 0\n");
+            log_err("client num < 0");
         } else if (client_num == 0) {
-            log_system("client equals zero\n");
+            log_system("client equals zero");
         }
 
         // check all socket
@@ -153,7 +154,7 @@ void event_loop()
             struct kevent event = events[i];
             SOCKET sock = event.flags & EV_ERROR ? -1 : event.ident;
             if (sock == -1) {
-                log_err("sock == -1\n");
+                log_err("sock == -1");
                 continue;
             }
 #endif
@@ -196,14 +197,13 @@ void event_loop()
 
                     if (getnameinfo((sockaddr *)&client_addr, addr_len, host, NI_MAXHOST, port, NI_MAXSERV, 0) == 0) {
                         std::stringstream ss;
-                        ss << "connect to client <host>: " << host << " <port>: " << port << std::endl;
+                        ss << "connect to client <host>: " << host << " <port>: " << port;
                         log_system(ss.str());
 
                     } else {
                         inet_ntop(AF_INET, &client_addr.sin_addr, host, NI_MAXHOST);
                         std::stringstream ss;
-                        ss << "connect to client <host>: " << host << " <port>: " << ntohs(client_addr.sin_port)
-                           << std::endl;
+                        ss << "connect to client <host>: " << host << " <port>: " << ntohs(client_addr.sin_port);
                         log_system(ss.str());
                     }
                     new_eclient->hostname = std::string(host);
@@ -244,11 +244,10 @@ void event_loop()
                     std::stringstream ss;
                     if (controller.server.clients.count(sock)) {
                         ss << "client exited, <host>: " << controller.server.clients[sock]->hostname
-                           << " <port>: " << controller.server.clients[sock]->port
-                           << std::endl;
+                           << " <port>: " << controller.server.clients[sock]->port;
                         log_warn(ss.str());
                     } else {
-                        ss << "client [" << sock << "] exited" << std::endl;
+                        ss << "client [" << sock << "] exited";
                         log_warn(ss.str());
                     }
                     /* don't need this feature */
@@ -256,7 +255,7 @@ void event_loop()
                     controller.server.clients.erase(sock);
                 } else {
                     std::stringstream ss;
-                    ss << "from client [" << sock << "]: " << buffer << std::endl;
+                    ss << "from client [" << sock << "]: " << buffer;
                     log_system(ss.str());
                     /* change current client */
                     controller.client = controller.server.clients[sock];
@@ -294,10 +293,10 @@ void logo()
 
 void signal_handler(int signum)
 {
-    log_warn("System Exit...\n");
-    log_warn("Saving data...\n");
+    log_warn("System Exit...");
+    log_warn("Saving data...");
     save_data(&controller.server);
-    log_warn("Bye\n");
+    log_warn("Bye");
     exit(signum);
 }
 

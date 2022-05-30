@@ -115,7 +115,7 @@ bool load_data(ERedisServer *server, std::string base_path)
         return false;
     int len = reader.tellg();
     /* that means no dump.erdb available */
-    if(len<1){
+    if (len < 1) {
         reader.close();
         return true;
     }

@@ -6,8 +6,6 @@
  */
 
 #include "utils.hpp"
-#include <iostream>
-#include <sstream>
 
 std::string to_lower(std::string str)
 {
@@ -35,6 +33,9 @@ std::string format_time()
     return strtime.str();
 }
 
+/**
+ * log_* will print a \n, please not send a str with \n in the end
+ */
 void log_err(std::string str)
 {
     auto stime = format_time();
@@ -46,9 +47,12 @@ void log_err(std::string str)
 #ifdef __APPLE__
         << "\x1b[0m"
 #endif
-        ;
+        << std::endl;
 }
 
+/**
+ * log_* will print a \n, please not send a str with \n in the end
+ */
 void log_system(std::string str)
 {
     auto stime = format_time();
@@ -60,9 +64,12 @@ void log_system(std::string str)
 #ifdef __APPLE__
         << "\x1b[0m"
 #endif
-        ;
+        << std::endl;
 }
 
+/**
+ * log_* will print a \n, please not send a str with \n in the end
+ */
 void log_warn(std::string str)
 {
     auto stime = format_time();
@@ -74,5 +81,5 @@ void log_warn(std::string str)
 #ifdef __APPLE__
         << "\x1b[0m"
 #endif
-        ;
+        << std::endl;
 }
