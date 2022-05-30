@@ -262,6 +262,7 @@ void event_loop()
                     auto res = controller.run(std::string(buffer));
                     /* std::cout << "result after executing:\n" */
                     /*           << res << std::endl; */
+                    log_system(res);
                     send(sock, res.c_str(), res.size(), 0);
                 }
             }
