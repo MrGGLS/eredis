@@ -42,7 +42,7 @@ void log_err(std::string str)
 #ifdef __APPLE__
         << "\x1b[31m"
 #endif
-        << "[ERROR|" << stime << "] " << str
+        << "[ERR|" << stime << "] " << str
 #ifdef __APPLE__
         << "\x1b[0m"
 #endif
@@ -56,7 +56,7 @@ void log_system(std::string str)
 #ifdef __APPLE__
         << "\x1b[36m"
 #endif
-        << "[SYSTEM|" << stime << "] " << str
+        << "[SYS|" << stime << "] " << str
 #ifdef __APPLE__
         << "\x1b[0m"
 #endif

@@ -162,7 +162,7 @@ std::string Controller::run(std::string input)
         return set_json("syntax error", SERVER_SYNTAX_ERR, NULL);
     }
     case Parser_Token::arguments_error: {
-        return set_json("ERR wrong number of arguments", SERVER_SYNTAX_ERR, NULL);
+        return set_json("wrong number of arguments", SERVER_SYNTAX_ERR, NULL);
     }
     case Parser_Token::no_vaild_error: {
         return set_json("Invalid argument(s)", SERVER_SYNTAX_ERR, NULL);

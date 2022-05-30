@@ -1216,7 +1216,6 @@ Parser_Token Parser::split()
 
                 } else if (' ' == input[quotation_pos + 1] && cur_quotation_pos > 0 && N % 2 == 0) {
                     std::string sub_input = input.substr(cur_quotation_pos + 1, quotation_pos - cur_quotation_pos - 1);
-                    sub_input='"'+sub_input;
                     split_result.push_back(sub_input);
                     i = quotation_pos + 1;
                     for (; i < size; ++i) {

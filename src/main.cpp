@@ -10,8 +10,8 @@
 #include <string>
 
 #ifdef _WIN32
-#include <ws2tcpip.h>
 #include <windows.h>
+#include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 #elif __APPLE__
 #include <arpa/inet.h>
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     signal(SIGABRT, signal_handler);
 #ifdef __APPLE__
     signal(SIGKILL, signal_handler);
-#endif;
+#endif
     /* start */
     event_loop();
 
@@ -74,7 +74,7 @@ void event_loop()
     WORD ver = MAKEWORD(2, 2);
     int wsOK = WSAStartup(ver, &wsData);
     if (wsOK != 0) {
-        std::cerr << "Sorry, can't initialize...." << std::endl;
+        log_err("Sorry, can't initialize....");
     }
 #endif
 
@@ -82,7 +82,8 @@ void event_loop()
     SOCKET server_socket = socket(AF_INET, SOCK_STREAM, 0);
     SOCKET max_fd = server_socket;
     if (server_socket == INVALID_SOCKET) {
-        std::cerr << "Sorry, can't create server socket...." << std::endl;
+        log_err("Sorry, can't create server socket....\n");
+        signal_handler(-1);
     }
 
     /* socket config */
@@ -97,8 +98,8 @@ void event_loop()
 
     /* bind addr */
     if (bind(server_socket, (sockaddr *)&hint, sizeof(hint)) < 0) {
-        std::cerr << "bind error" << std::endl;
-        exit(-1);
+        log_err("bind error");
+        signal_handler(-1);
     }
 
     /* set listening & max backlog */
@@ -223,7 +224,6 @@ void event_loop()
 #endif
 
                 int bytes_in = recv(sock, buffer, BUFFER_LEN, 0);
-                //                assert(bytes_in > 0);
                 std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
                 /* we should update client's last interaction in time */
                 if (controller.server.clients.count(sock)) {
@@ -242,19 +242,21 @@ void event_loop()
                     kevent(kq, &del_event, 1, NULL, 0, NULL);
 #endif
                     std::stringstream ss;
-                    ss << "Disconnect to client <host>: " << controller.server.clients[sock]->hostname
+                    ss << "client exited, <host>: " << controller.server.clients[sock]->hostname
                        << " <port>: " << controller.server.clients[sock]->port
                        << std::endl;
                     log_warn(ss.str());
                     save_data(&controller.server);
                     controller.server.clients.erase(sock);
                 } else {
-                    std::cout << "from client [" << sock << "] received command: " << buffer << std::endl;
+                    std::stringstream ss;
+                    ss << "from client [" << sock << "]: " << buffer << std::endl;
+                    log_system(ss.str());
                     /* change current client */
                     controller.client = controller.server.clients[sock];
                     auto res = controller.run(std::string(buffer));
-                    std::cout << "result after executing:\n"
-                              << res << std::endl;
+                    /* std::cout << "result after executing:\n" */
+                    /*           << res << std::endl; */
                     send(sock, res.c_str(), res.size(), 0);
                 }
             }
