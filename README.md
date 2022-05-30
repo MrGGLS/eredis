@@ -95,6 +95,8 @@ EasyRedis 是根据 Redis 进行设计的一款轻量级键值型数据库。
 
 1. `save`: 保存数据
 
+### 客户端退出
+1. `exit`: 退出客户端
 
 ## contributors
 <a href="https://github.com/MrGGLS/eredis/graphs/contributors">
