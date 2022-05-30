@@ -521,11 +521,6 @@ std::vector<int> ERedisServer::get_all_idle_clients()
         //        std::lock_guard<std::mutex> lg(*(server->cli_mtx));
         if (server->cli_mtx->try_lock()) {
             for (auto idle_cli : should_del_clients) {
-                std::stringstream ss;
-                ss << "client exited, <host>: " << server->clients[idle_cli]->hostname
-                   << " <port>: " << server->clients[idle_cli]->port
-                   << std::endl;
-                log_warn(ss.str());
                 server->clients.erase(idle_cli);
             }
         }
