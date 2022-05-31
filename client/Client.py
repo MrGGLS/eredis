@@ -142,9 +142,17 @@ if __name__ == '__main__':
          'rpop', 'lindex', 'llen', 'lset', 'quit', 'exit', 'q'])
 
     # get welcome message
-    recv_data = sender.recv(1024).decode('utf-8')
-    print(recv_data)
+    try:
+        recv_data = sender.recv(1024).decode('utf-8')
+        print(recv_data)
+    except:
+        print('Connection broken, auto exit...')
+        exitFunction()
+        exit(0)
 
+    '''
+    具体逻辑
+    '''
     while True:
 
         string = session.prompt(promoptString, completer=redisCompleter, auto_suggest=AutoSuggestFromHistory())
@@ -160,12 +168,17 @@ if __name__ == '__main__':
             helpFunction()
             continue
 
-        '''
-        具体逻辑
-        '''
 
         sender.send(string.encode('utf-8'))
 
-        recv_data = json.loads(sender.recv(1024).decode('utf-8'))
+        try:
+            jsonData = sender.recv(1024).decode('utf-8')
+            recv_data = json.loads(jsonData)
+            processMessage(recv_data)
+        except:
+            print('Connection broken, auto exit...')
+            exitFunction()
+            break
 
-        processMessage(recv_data)
+
+

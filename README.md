@@ -4,7 +4,7 @@ EasyRedis 是根据 Redis 进行设计的一款轻量级键值型数据库。
 
 数据存储上，EasyRedis提供了 Redis 中的String和List两种类型的数据存储，其中String类型能够根据输入自动转型成int和double类型。此外，EasyRedis也提供了键值对过期的功能，能够为某些特定的键值对设置过期时间。EasyRedis采用了与Redis类似的数据存储结构，采用`dump.erdb`存储二进制数据，并提供定时保存和客户主动保存两种机制。
 
-通信模块上，EasyRedis分别实现了Server端和Client端，其中Server端使用C++实现，Client端使用Python实现。针对不同的宿主系统，Server端采用不同的异步I/O实现，例如macOS/BSD下的kqueue、Windows下的select，从性能上来说，能够最多支持1024个客户机同时接入。
+通信模块上，EasyRedis分别实现了Server端和Client端，其中Server端使用C++实现，Client端使用Python实现。针对不同的宿主系统，Server端采用不同的异步I/O实现，例如macOS/BSD下的kqueue、Windows下的select，从性能上来说，能够支持成千上万的用户同时接入，再用户长时间没有通信时，自动将其清除，减少空闲用户对服务器资源的挤占。
 
 用户界面上，EasyRedis使用了Python实现，提供代码补全、历史代码提示等功能。
 

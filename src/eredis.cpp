@@ -4,6 +4,7 @@
 #include "eredis.hpp"
 #include "utils.hpp"
 #include <sstream>
+#include <unistd.h>
 ERedisDb::ERedisDb(int id)
     : id(id)
 {
@@ -476,6 +477,7 @@ std::vector<std::string> ERedisServer::get_all_expire_keys(int db_id)
     }
     return should_del_keys;
 }
+
 std::vector<int> ERedisServer::get_all_idle_clients()
 {
     std::vector<int> should_del_clients;

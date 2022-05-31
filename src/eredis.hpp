@@ -20,7 +20,7 @@
 #define REDIS_FAIL "ERROR"
 #define REDIS_EXIT "EXIT"
 /* net setting */
-#define MAX_BACKLOG 16
+#define MAX_BACKLOG 0xffff
 #define BUFFER_LEN 4096
 #define SERVER_PORT 8888
 #define MAX_TIMEOUT 666
@@ -32,8 +32,8 @@
 #define EREDIS_DEFAULT_DB_ID 0
 #define EREDIS_DEFAULT_DB_NUM 16 // default db num
 #define EREDIS_DEFAULT_DEL_INTERVAL 60000 // default check keys validity interval
-#define EREDIS_DEFAULT_DEL_CLIENT_INTERVAL 6000 // default check client's validity interval
-#define EREDIS_DEFAULT_CLIENT_TIMEOUT (5) // client max idle time
+#define EREDIS_DEFAULT_DEL_CLIENT_INTERVAL 60000 // default check client's validity interval
+#define EREDIS_DEFAULT_CLIENT_TIMEOUT (5 * 60) // client max idle time
 
 /* client-server return code */
 #define SERVER_SYNTAX_ERR 0
