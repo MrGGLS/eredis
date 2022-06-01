@@ -173,7 +173,7 @@ std::string ERedisServer::get_key(int db_id, std::string key)
             return std::to_string(edb->dict[key].get_double());
         }
         case ObjectType::EREDIS_STRING: {
-            return edb->dict[key].get_str();
+            return "\"" + edb->dict[key].get_str() + "\"";
         }
         default:
             break;
@@ -328,7 +328,7 @@ std::string ERedisServer::lrange(int db_id, std::string key, int start, int end)
         std::string res = "";
         end = end > list.size() ? list.size() : end;
         for (int i = start; i < end; i++) {
-            res += std::to_string(i) + ")" + list[i] + "\r\n";
+            res += std::to_string(i) + ")" + "\"" + list[i] + "\""+ "\r\n";
         }
         return res == "" ? "(empty)" : res;
     }
@@ -386,7 +386,7 @@ std::string ERedisServer::lindex(int db_id, std::string key, int index)
         if (list.size() <= index) {
             return REDIS_FAIL;
         } else {
-            return list[index];
+            return "\"" + list[index] + "\"";
         }
     }
     return REDIS_FAIL;
@@ -496,10 +496,10 @@ std::vector<int> ERedisServer::get_all_idle_clients()
         for (const auto &edb : server->db) {
             std::vector<std::string> should_del_keys = server->get_all_expire_keys(edb->id);
             /* for data safety consideration, we don't directly use del_key function here */
-            //            std::lock_guard<std::mutex> lg(*(server->key_mtx));
             if (server->key_mtx->try_lock()) {
                 for (auto del_k : should_del_keys) {
                     if (edb->dict.count(del_k)) {
+                        log_warn("clear expired key: " + del_k);
                         edb->dict.erase(del_k);
                         edb->expires.erase(del_k);
                     }
@@ -508,8 +508,6 @@ std::vector<int> ERedisServer::get_all_idle_clients()
             }
             server->key_mtx->unlock();
         }
-        //        std::cout<<"hehe................."<<std::endl;
-        //        std::this_thread::sleep_for(std::chrono::milliseconds (100));
         std::this_thread::sleep_for(std::chrono::milliseconds(EREDIS_DEFAULT_DEL_INTERVAL));
     }
 }

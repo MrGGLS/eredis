@@ -56,9 +56,6 @@ int main(int argc, char **argv)
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGABRT, signal_handler);
-#ifdef __APPLE__
-    signal(SIGKILL, signal_handler);
-#endif
 
     /* start */
     event_loop();
@@ -275,10 +272,12 @@ void event_loop()
 }
 
 /**
- * print the LOGO: ERSERVER
+ * print the LOGO: ERSERVER in fancy way
  *
- * In macOS, we will use green color to print the logo,
+ * - In macOS, we will use green color to print the logo,
  * which is not support in windows powershell.
+ *
+ * - same situation happens in log_*() functions
  *
  */
 void logo()

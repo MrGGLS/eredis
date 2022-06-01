@@ -139,7 +139,7 @@ if __name__ == '__main__':
         ['select', 'key', 'save', 'keys', 'type', 'del', 'dbsize', 'flushdb',
          'exists', 'flushall', 'expire', 'setex', 'ttl', 'set', 'get', 'strlen',
          'append', 'getrange', 'incr', 'decr', 'lpush', 'rpush', 'lrange', 'lpop',
-         'rpop', 'lindex', 'llen', 'lset', 'quit', 'exit', 'q'])
+         'rpop', 'lindex', 'llen', 'lset', 'quit', 'exit', 'q', 'help'])
 
     # get welcome message
     try:
