@@ -19,6 +19,7 @@
 #define REDIS_OK "OK"
 #define REDIS_FAIL "ERROR"
 #define REDIS_EXIT "EXIT"
+
 /* net setting */
 #define MAX_BACKLOG 0xffff
 #define BUFFER_LEN 4096
@@ -43,16 +44,13 @@
 struct ERedisDb {
     ERedisDb(int id);
     /*该数据库下的所有键值对*/
-    /* Dict *dict; /1* The keyspace for this DB *1/ */
     std::unordered_map<std::string, ERObject> dict;
 
     /*有期限的键字典（key,value）= (键，过期时间)
      * 进行键操作时需先判断key是否已过期（lazy）*/
-    /* Dict *expires; /1* Timeout of keys with a timeout set *1/ */
     std::unordered_map<std::string, std::time_t> expires;
 
     //发布订阅机制需要
-    /* Dict *watched_keys; /1* WATCHED keys for MULTI/EXEC CAS *1/ */
     std::unordered_map<std::string, ERObject> watched_keys;
 
     int id; /* Database ID */
@@ -69,9 +67,6 @@ struct ERedisClient {
 
     std::string hostname;
     std::string port;
-
-    // TODO: 通信模块
-    // all socket function
 };
 
 struct ERedisServer {
@@ -79,7 +74,6 @@ struct ERedisServer {
     std::string server_auth; /* password */
 
     // databases
-    /* RedisDb *db; */
     std::vector<ERedisDb *> db;
 
     /* Networking */
@@ -88,13 +82,9 @@ struct ERedisServer {
     int port; /* TCP listening port */
     int tcp_backlog; /* TCP listen() backlog */
 
-    // UNIX 套接字
-    //    char *unixsocket; /* UNIX socket path */
-    //    mode_t unixsocketperm; /* UNIX socket permission */
-
     /* RedisClient *current_client;  Current client  */
-    //    std::vector<ERedisClient *> clients;
     std::unordered_map<int, ERedisClient *> clients; /* pair: (cliend_id,client) */
+
     /* Fields used only for stats */
     // 服务器启动时间
     time_t start_time; /* Server start time */
@@ -106,6 +96,7 @@ struct ERedisServer {
     std::string erdb_filename; /* Name of ERDB file */
     int erdb_compression; /* Use compression in ERDB? */
     int erdb_checksum; /* Use ERDB checksum? */
+
     /* use lock for key and clients */
     std::mutex *key_mtx;
     std::mutex *cli_mtx;
@@ -113,6 +104,7 @@ struct ERedisServer {
     /* inner operations (can't be used by user) */
     std::vector<std::string> get_all_expire_keys(int db_id);
     std::vector<int> get_all_idle_clients();
+
     /* common operations */
     std::string get_all_keys(int db_id);
     std::string exists_key(int db_id, std::string key);
@@ -124,6 +116,7 @@ struct ERedisServer {
     std::string select_db(int db_id, int client_id); /* need to know who is using the db */
     std::string set_expire(int db_id, std::string key, int secs);
     std::string ttl(int db_id, std::string key);
+
     /* string operations */
     std::string set_key(int db_id, std::string key, ERObject erObject);
     std::string setex(int db_id, std::string key, int secs, ERObject erObject);
@@ -133,6 +126,7 @@ struct ERedisServer {
     std::string getrange(int db_id, std::string key, int start, int end);
     std::string incr(int db_id, std::string key);
     std::string decr(int db_id, std::string key);
+
     /* list operations */
     std::string lpush(int db_id, std::string key, ERObject erObject);
     std::string rpush(int db_id, std::string key, ERObject erObject);
@@ -142,6 +136,7 @@ struct ERedisServer {
     std::string lindex(int db_id, std::string key, int index);
     std::string llen(int db_id, std::string key);
     std::string lset(int db_id, std::string key, int index, std::string value);
+
     ERedisServer(std::vector<ERedisDb *> _db, int db_num);
     ERedisServer(int db_num = EREDIS_DEFAULT_DB_NUM);
     ~ERedisServer();

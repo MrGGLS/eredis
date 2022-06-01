@@ -144,8 +144,7 @@ void event_loop()
             log_system("client equals zero");
         }
 
-        // check all socket
-
+        // check all responsed socket
         for (int i = 0; i < client_num; i++) {
 
 #ifdef _WIN32
@@ -177,6 +176,7 @@ void event_loop()
                     EV_SET(&new_event, new_client, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
                     kevent(kq, &new_event, 1, NULL, 0, NULL);
 #endif
+
                     /* complete new client info */
                     auto new_eclient = new ERedisClient();
                     new_eclient->client_id = new_client;
@@ -232,6 +232,7 @@ void event_loop()
                 /* the client might be deleted by timeout or something bad happened
                  * so we close them. */
                 if (controller.server.clients.count(sock) <= 0 || bytes_in <= 0) {
+
 #ifdef _WIN32
                     closesocket(sock);
                     FD_CLR(sock, &master);
@@ -241,6 +242,9 @@ void event_loop()
                     EV_SET(&del_event, sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                     kevent(kq, &del_event, 1, NULL, 0, NULL);
 #endif
+                    /* cleanup exited client
+                     * FIXME: migrate this logic to cleaup thread
+                     * */
                     std::stringstream ss;
                     if (controller.server.clients.count(sock)) {
                         ss << "client exited, <host>: " << controller.server.clients[sock]->hostname
@@ -250,8 +254,6 @@ void event_loop()
                         ss << "client [" << sock << "] exited";
                         log_warn(ss.str());
                     }
-                    /* don't need this feature */
-                    //                    save_data(&controller.server);
                     controller.server.clients.erase(sock);
                 } else {
                     std::stringstream ss;
@@ -260,8 +262,6 @@ void event_loop()
                     /* change current client */
                     controller.client = controller.server.clients[sock];
                     auto res = controller.run(std::string(buffer));
-                    /* std::cout << "result after executing:\n" */
-                    /*           << res << std::endl; */
                     log_system(res);
                     send(sock, res.c_str(), res.size(), 0);
                 }
@@ -274,6 +274,13 @@ void event_loop()
 #endif
 }
 
+/**
+ * print the LOGO: ERSERVER
+ *
+ * In macOS, we will use green color to print the logo,
+ * which is not support in windows powershell.
+ *
+ */
 void logo()
 {
     std::cout << "\n";
@@ -292,6 +299,8 @@ void logo()
               << std::endl;
 }
 
+// before exit by error signal,
+// we must save data to make sure that data consistency
 void signal_handler(int signum)
 {
     log_warn("System Exit...");
