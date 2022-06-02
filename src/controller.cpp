@@ -181,6 +181,7 @@ Controller::Controller()
 {
     load_data(&server);
 }
+
 std::string Controller::set_json(std::string msg, int type, int *value)
 {
     nlohmann::json j;

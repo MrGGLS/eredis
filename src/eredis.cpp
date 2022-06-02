@@ -277,6 +277,8 @@ std::string ERedisServer::lpush(int db_id, std::string key, ERObject erObject)
     }
     if (edb->dict.count(key) > 0) {
         auto tmp = erObject.get_list();
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         std::vector<std::string> new_list = edb->dict[key].get_list();
         for (int i = 0; i < tmp.size(); i++) {
             new_list.insert(new_list.begin(), tmp[i]);
@@ -301,6 +303,8 @@ std::string ERedisServer::rpush(int db_id, std::string key, ERObject erObject)
     }
     if (edb->dict.count(key) > 0) {
         auto tmp = erObject.get_list();
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         auto new_list = edb->dict[key].get_list();
         new_list.insert(new_list.end(), tmp.begin(), tmp.end());
         edb->dict[key].set_list(new_list);
@@ -320,6 +324,8 @@ std::string ERedisServer::lrange(int db_id, std::string key, int start, int end)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key)) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         auto list = edb->dict[key].get_list();
         if (list.size() <= start)
             return "(empty)";
@@ -342,6 +348,9 @@ std::string ERedisServer::lpop(int db_id, std::string key)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
+
         if (edb->dict[key].get_list().empty()) {
             edb->dict.erase(key);
         } else {
@@ -362,6 +371,9 @@ std::string ERedisServer::rpop(int db_id, std::string key)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
+
         if (edb->dict[key].get_list().empty()) {
             edb->dict.erase(key);
         } else {
@@ -382,6 +394,8 @@ std::string ERedisServer::lindex(int db_id, std::string key, int index)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         auto list = edb->dict[key].get_list();
         if (list.size() <= index) {
             return REDIS_FAIL;
@@ -399,6 +413,8 @@ std::string ERedisServer::llen(int db_id, std::string key)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         return std::to_string(edb->dict[key].get_list().size());
     }
     return REDIS_FAIL;
@@ -411,6 +427,8 @@ std::string ERedisServer::lset(int db_id, std::string key, int index, std::strin
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         auto list = edb->dict[key].get_list();
         if (list.size() <= index) {
             return REDIS_FAIL;
@@ -432,7 +450,6 @@ std::string ERedisServer::set_expire(int db_id, std::string key, int secs)
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key)) {
         edb->expires[key] = time(0) + secs;
-        //        edb->expires.insert({ key, time(0) + secs });
         return REDIS_OK;
     }
     return REDIS_FAIL;

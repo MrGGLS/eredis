@@ -117,6 +117,8 @@ void event_loop()
     int kq = kqueue();
     struct kevent changes;
     EV_SET(&changes, server_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    /* add first fd to kqueue
+     * which is our server itself */
     kevent(kq, &changes, 1, NULL, 0, NULL);
 #elif __WIN32
     fd_set master;
@@ -138,7 +140,7 @@ void event_loop()
         if (client_num < 0) {
             log_err("client num < 0");
         } else if (client_num == 0) {
-            log_system("client equals zero");
+            log_err("client equals zero");
         }
 
         // check all responsed socket
@@ -214,6 +216,7 @@ void event_loop()
             } else {
 
                 char buffer[BUFFER_LEN];
+                // clear buffer, windows use `ZeroMemory`, macOS use `memset`
 #ifdef _WIN32
                 ZeroMemory(buffer, BUFFER_LEN);
 #elif __APPLE__
