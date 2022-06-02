@@ -11,6 +11,7 @@
  * @Author Zhang Jing
  *
  * connecter --> [parser --> controller --> server]
+ *
  * controller controller the parser to get the syntax result,
  * and send it to server to execute the command
  */

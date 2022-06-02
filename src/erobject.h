@@ -14,6 +14,7 @@ enum class ObjectType {
 };
 
 struct ERUnknown {
+    /* nothing */
 };
 
 struct ERString {
