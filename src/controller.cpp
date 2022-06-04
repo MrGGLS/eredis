@@ -73,7 +73,6 @@ std::string Controller::run(std::string input)
         std::string key = parser_res->getKey();
         int32_t start = parser_res->getStart();
         int32_t end = parser_res->getAnEnd();
-        std::cout << "key: " << key << std::endl;
         return set_json(server.getrange(client->db_id, key, start, end), SERVER_EXEC_RETURN, NULL);
     }
     case Parser_Token::incr_key_op: {

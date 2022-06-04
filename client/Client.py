@@ -61,7 +61,7 @@ def helpFunction():
         elif helpString == 'help key':
             helpkeyFunction()
 
-        elif helpString == 'help String':
+        elif helpString == 'help string':
             helpStringFunction()
 
         elif helpString == 'help list':
@@ -73,7 +73,7 @@ def helpFunction():
         elif helpString == 'help':
             print('To get help about ERedis command type:')
             print('     \033[1;31m\"help key\"\033[0m' + ' to get help for key command')
-            print('     \033[1;32m\"help String\"\033[0m' + ' to get help for String command')
+            print('     \033[1;32m\"help string\"\033[0m' + ' to get help for String command')
             print('     \033[1;33m\"help list\"\033[0m' + ' to get help for list command')
             print('     \033[1;34m\"help save\"\033[0m' + ' for get help for save command')
             print('     \033[1;35m\"quit\"/\"q\"/\"exit\"\033[0m' + ' to exit')
