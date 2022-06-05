@@ -277,7 +277,7 @@ void event_loop()
 /**
  * print the LOGO: ERSERVER in fancy way
  *
- * - In macOS, we will use green color to print the logo,
+ * - In macOS, we will use Green color to print the logo,
  * which is not support in windows powershell.
  *
  * - same situation happens in log_*() functions

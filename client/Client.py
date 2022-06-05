@@ -99,6 +99,9 @@ def processMessage(data):
         response_value = data['value']
         print(response_message)
 
+        if response_message == 'ERROR':
+            return
+
         if str(response_value) == '0':
             promoptString = 'EasyRedis> '
         else:
