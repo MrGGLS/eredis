@@ -40,13 +40,13 @@ void log_err(std::string str)
 {
     auto stime = format_time();
     std::cout
-#ifdef __APPLE__
+//#ifdef __APPLE__ || _WIN32
         << "\x1b[31m"
-#endif
+//#endif
         << "[ERR|" << stime << "] " << str
-#ifdef __APPLE__
+        //#ifdef __APPLE__ || _WIN32
         << "\x1b[0m"
-#endif
+//#endif
         << std::endl;
 }
 
@@ -55,15 +55,16 @@ void log_err(std::string str)
  */
 void log_system(std::string str)
 {
+//    std::cout<<"fuck you from log"<<std::endl;
     auto stime = format_time();
     std::cout
-#ifdef __APPLE__
+        //#ifdef __APPLE__ || _WIN32
         << "\x1b[36m"
-#endif
+//#endif
         << "[SYS|" << stime << "] " << str
-#ifdef __APPLE__
+//#ifdef __APPLE__ || _WIN32
         << "\x1b[0m"
-#endif
+//#endif
         << std::endl;
 }
 
@@ -74,12 +75,12 @@ void log_warn(std::string str)
 {
     auto stime = format_time();
     std::cout
-#ifdef __APPLE__
+//#ifdef __APPLE__ || _WIN32
         << "\x1b[33m"
-#endif
+//#endif
         << "[WARN|" << stime << "] " << str
-#ifdef __APPLE__
+//#ifdef __APPLE__ || _WIN32
         << "\x1b[0m"
-#endif
+//#endif
         << std::endl;
 }

@@ -33,7 +33,8 @@ static const auto LOGO = {
     "░ ░  ░  ░▒ ░ ▒░░ ░▒  ░ ░ ░ ░  ░  ░▒ ░ ▒░   ░ ░░   ░ ░  ░  ░▒ ░ ▒░\n"
     "░     ░░   ░ ░  ░  ░     ░     ░░   ░      ░░     ░     ░░   ░\n"
     "░  ░   ░           ░     ░  ░   ░           ░     ░  ░   ░\n"
-    "░\n"
+    "░\r\n\nEREDIS VERSION: "
+    EREDIS_VERSION
 };
 
 /* init controller as a static object */
@@ -60,6 +61,7 @@ int main(int argc, char **argv)
     /* start */
     event_loop();
 
+//    log_system("diao\n");
     /* test */
     /* testSave(); */
 }
@@ -286,15 +288,15 @@ void event_loop()
 void logo()
 {
     std::cout << "\n";
-#ifdef __APPLE__
+//#ifdef __APPLE__ || _WIN32
     std::cout << "\x1b[36m";
-#endif
+//#endif
     for (auto iter : LOGO) {
         std::cout << iter;
     }
-#ifdef __APPLE__
+//#ifdef __APPLE__ || _WIN32
     std::cout << "\x1b[0m";
-#endif
+//#endif
     std::cout << "\n";
     std::cout << "<host>: 127.0.0.1\n"
               << "<port>: " << SERVER_PORT

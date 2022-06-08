@@ -3,7 +3,6 @@
 //
 #include "eredis.hpp"
 #include "utils.hpp"
-#include <sstream>
 #include <unistd.h>
 ERedisDb::ERedisDb(int id)
     : id(id)

@@ -15,6 +15,8 @@
 #include <unordered_map>
 #include <vector>
 
+/* meta data */
+#define EREDIS_VERSION "0.2.0"
 /*error codes*/
 #define REDIS_OK "OK"
 #define REDIS_FAIL "ERROR"
