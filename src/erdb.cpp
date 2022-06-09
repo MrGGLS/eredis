@@ -11,7 +11,7 @@ bool save_data(ERedisServer *server, std::string base_path)
         return false;
     /* header of file */
     writer.write(DBNAME, 6);
-    writer.write(EREDIS_VERSION, 4);
+    writer.write(ERDB_VERSION, 4);
     //    writer.write((char*)&server->erdb_checksum,4);
     uint8_t db_num = server->db_num;
     writer.write((char *)&db_num, 1);
@@ -115,7 +115,7 @@ bool load_data(ERedisServer *server, std::string base_path)
         return false;
     int len = reader.tellg();
     /* that means no dump.erdb available */
-    if(len<1){
+    if (len < 1) {
         reader.close();
         return true;
     }
@@ -148,9 +148,9 @@ bool load_data(ERedisServer *server, std::string base_path)
     /* check version */
     char version[VERSION_LEN] = { 0 };
     reader.read(version, VERSION_LEN);
-    auto eredis_version = EREDIS_VERSION;
+    auto erdb_version = ERDB_VERSION;
     for (int i = 0; i < VERSION_LEN; ++i) {
-        if (version[i] != eredis_version[i]) {
+        if (version[i] != erdb_version[i]) {
             reader.close();
             return false;
         }

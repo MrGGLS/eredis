@@ -5,7 +5,10 @@
 #ifndef EASY_REDIS_UTILS_HPP
 #define EASY_REDIS_UTILS_HPP
 
+#include <iostream>
+#include <sstream>
 #include <string>
+
 std::string to_lower(std::string str);
 std::string to_upper(std::string str);
 

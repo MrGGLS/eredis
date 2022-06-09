@@ -26,20 +26,20 @@ enum Parser_Token {
     strlen_key = 11,
     append_key_value_op = 12,
     getrange_key_start_end = 13,
-    incr_key_op=14,
-    decr_key_op=15,
-    lpush_key_list_op=16,
-    rpush_key_list_op=17,
-    lrange_key_op=18,
-    lpop_key_op=19,
-    rpop_key_op=20,
-    lindex_key_op=21,
-    llen_key_op=22,
-    lset_key_index_op=23,
-    save_op=24,
-    expire_key_op=25,
-    setex_key_op=26,
-    ttl_key_op=27,
+    incr_key_op = 14,
+    decr_key_op = 15,
+    lpush_key_list_op = 16,
+    rpush_key_list_op = 17,
+    lrange_key_op = 18,
+    lpop_key_op = 19,
+    rpop_key_op = 20,
+    lindex_key_op = 21,
+    llen_key_op = 22,
+    lset_key_index_op = 23,
+    save_op = 24,
+    expire_key_op = 25,
+    setex_key_op = 26,
+    ttl_key_op = 27,
     //语法错误
     syntax_error = -1,
     arguments_error = -2,
@@ -230,10 +230,11 @@ private:
     int32_t start;
     int32_t end;
 };
-//incr
-class incr_result :public op_result{
+// incr
+class incr_result : public op_result {
 private:
     std::string key;
+
 public:
     const std::string &getKey() const;
 
@@ -241,10 +242,11 @@ public:
 
     incr_result(int optype, const std::string &result, const std::string &key);
 };
-//decr
-class decr_result:public op_result{
+// decr
+class decr_result : public op_result {
 private:
     std::string key;
+
 public:
     decr_result(int optype, const std::string &result, const std::string &key);
 
@@ -252,11 +254,12 @@ public:
 
     void setKey(const std::string &key);
 };
-//lpush
-class lpush_result:public op_result{
+// lpush
+class lpush_result : public op_result {
 private:
     std::string key;
     ERObject value;
+
 public:
     lpush_result(int optype, const std::string &result, const std::string &key, const ERObject &value);
 
@@ -268,8 +271,8 @@ public:
 
     void setValue(const ERObject &value);
 };
-//rpush
-class rpush_result:public op_result{
+// rpush
+class rpush_result : public op_result {
 private:
     std::string key;
     ERObject value;
@@ -285,12 +288,13 @@ public:
 
     void setValue(const ERObject &value);
 };
-//lrange
-class lrange_result:public op_result{
+// lrange
+class lrange_result : public op_result {
 private:
     std::string key;
     int start;
     int end;
+
 public:
     lrange_result(int optype, const std::string &result, const std::string &key, int start, int anEnd);
 
@@ -306,10 +310,11 @@ public:
 
     void setAnEnd(int anEnd);
 };
-//lpop
-class lpop_result:public op_result{
+// lpop
+class lpop_result : public op_result {
 private:
     std::string key;
+
 public:
     lpop_result(int optype, const std::string &result, const std::string &key);
 
@@ -317,10 +322,11 @@ public:
 
     void setKey(const std::string &key);
 };
-//rpop
-class rpop_result:public op_result{
+// rpop
+class rpop_result : public op_result {
 private:
     std::string key;
+
 public:
     rpop_result(int optype, const std::string &result, const std::string &key);
 
@@ -328,13 +334,14 @@ public:
 
     void setKey(const std::string &key);
 };
-//lindex
-class lindex_result:public op_result{
+// lindex
+class lindex_result : public op_result {
 private:
     std::string key;
     int index;
+
 public:
-    lindex_result(int optype, const std::string &result, const std::string &key,int index);
+    lindex_result(int optype, const std::string &result, const std::string &key, int index);
 
     const std::string &getKey() const;
 
@@ -342,10 +349,11 @@ public:
 
     int getIndex();
 };
-//llen
-class llen_result:public op_result{
+// llen
+class llen_result : public op_result {
 private:
     std::string key;
+
 public:
     llen_result(int optype, const std::string &result, const std::string &key);
 
@@ -353,11 +361,12 @@ public:
 
     void setKey(const std::string &key);
 };
-class lset_result:public op_result{
+class lset_result : public op_result {
 private:
     std::string key;
     int index;
     std::string value;
+
 public:
     int getIndex() const;
 
@@ -374,15 +383,16 @@ public:
 
     void setKey(const std::string &key);
 };
-class save_result:public op_result{
+class save_result : public op_result {
 private:
 public:
     save_result(int optype, const std::string &result);
 };
-class expire_result:public op_result{
+class expire_result : public op_result {
 private:
     std::string key;
     int time;
+
 public:
     expire_result(int optype, const std::string &result, const std::string &key, int time);
 
@@ -394,11 +404,12 @@ public:
 
     void setTime(int time);
 };
-class setex_result :public op_result{
+class setex_result : public op_result {
 private:
     std::string key;
     int time;
     ERObject value;
+
 public:
     setex_result(int optype, const std::string &result, const std::string &key, int time, const ERObject &value);
 
@@ -414,9 +425,10 @@ public:
 
     void setValue(const ERObject &value);
 };
-class ttl_key_result:public op_result{
+class ttl_key_result : public op_result {
 private:
     std::string key;
+
 public:
     ttl_key_result(int optype, const std::string &result, const std::string &key);
 

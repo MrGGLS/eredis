@@ -10,8 +10,8 @@
 #include <string>
 
 #ifdef _WIN32
-#include <ws2tcpip.h>
 #include <windows.h>
+#include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 #elif __APPLE__
 #include <arpa/inet.h>
@@ -33,7 +33,8 @@ static const auto LOGO = {
     "░ ░  ░  ░▒ ░ ▒░░ ░▒  ░ ░ ░ ░  ░  ░▒ ░ ▒░   ░ ░░   ░ ░  ░  ░▒ ░ ▒░\n"
     "░     ░░   ░ ░  ░  ░     ░     ░░   ░      ░░     ░     ░░   ░\n"
     "░  ░   ░           ░     ░  ░   ░           ░     ░  ░   ░\n"
-    "░\n"
+    "░\r\n\nEREDIS VERSION: "
+    EREDIS_VERSION
 };
 
 /* init controller as a static object */
@@ -56,12 +57,11 @@ int main(int argc, char **argv)
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGABRT, signal_handler);
-#ifdef __APPLE__
-    signal(SIGKILL, signal_handler);
-#endif;
+
     /* start */
     event_loop();
 
+//    log_system("diao\n");
     /* test */
     /* testSave(); */
 }
@@ -74,7 +74,7 @@ void event_loop()
     WORD ver = MAKEWORD(2, 2);
     int wsOK = WSAStartup(ver, &wsData);
     if (wsOK != 0) {
-        std::cerr << "Sorry, can't initialize...." << std::endl;
+        log_err("Sorry, can't initialize....");
     }
 #endif
 
@@ -82,7 +82,8 @@ void event_loop()
     SOCKET server_socket = socket(AF_INET, SOCK_STREAM, 0);
     SOCKET max_fd = server_socket;
     if (server_socket == INVALID_SOCKET) {
-        std::cerr << "Sorry, can't create server socket...." << std::endl;
+        log_err("Sorry, can't create server socket....");
+        signal_handler(-1);
     }
 
     /* socket config */
@@ -97,8 +98,8 @@ void event_loop()
 
     /* bind addr */
     if (bind(server_socket, (sockaddr *)&hint, sizeof(hint)) < 0) {
-        std::cerr << "bind error" << std::endl;
-        exit(-1);
+        log_err("bind error");
+        signal_handler(-1);
     }
 
     /* set listening & max backlog */
@@ -118,6 +119,8 @@ void event_loop()
     int kq = kqueue();
     struct kevent changes;
     EV_SET(&changes, server_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    /* add first fd to kqueue
+     * which is our server itself */
     kevent(kq, &changes, 1, NULL, 0, NULL);
 #elif __WIN32
     fd_set master;
@@ -137,13 +140,12 @@ void event_loop()
 #endif
 
         if (client_num < 0) {
-            log_err("client num < 0\n");
+            log_err("client num < 0");
         } else if (client_num == 0) {
-            log_system("client equals zero\n");
+            log_err("client equals zero");
         }
 
-        // check all socket
-
+        // check all responsed socket
         for (int i = 0; i < client_num; i++) {
 
 #ifdef _WIN32
@@ -152,7 +154,7 @@ void event_loop()
             struct kevent event = events[i];
             SOCKET sock = event.flags & EV_ERROR ? -1 : event.ident;
             if (sock == -1) {
-                log_err("sock == -1\n");
+                log_err("sock == -1");
                 continue;
             }
 #endif
@@ -175,6 +177,7 @@ void event_loop()
                     EV_SET(&new_event, new_client, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
                     kevent(kq, &new_event, 1, NULL, 0, NULL);
 #endif
+
                     /* complete new client info */
                     auto new_eclient = new ERedisClient();
                     new_eclient->client_id = new_client;
@@ -195,14 +198,13 @@ void event_loop()
 
                     if (getnameinfo((sockaddr *)&client_addr, addr_len, host, NI_MAXHOST, port, NI_MAXSERV, 0) == 0) {
                         std::stringstream ss;
-                        ss << "connect to client <host>: " << host << " <port>: " << port << std::endl;
+                        ss << "connect to client <host>: " << host << " <port>: " << port;
                         log_system(ss.str());
 
                     } else {
                         inet_ntop(AF_INET, &client_addr.sin_addr, host, NI_MAXHOST);
                         std::stringstream ss;
-                        ss << "connect to client <host>: " << host << " <port>: " << ntohs(client_addr.sin_port)
-                           << std::endl;
+                        ss << "connect to client <host>: " << host << " <port>: " << ntohs(client_addr.sin_port);
                         log_system(ss.str());
                     }
                     new_eclient->hostname = std::string(host);
@@ -216,6 +218,7 @@ void event_loop()
             } else {
 
                 char buffer[BUFFER_LEN];
+                // clear buffer, windows use `ZeroMemory`, macOS use `memset`
 #ifdef _WIN32
                 ZeroMemory(buffer, BUFFER_LEN);
 #elif __APPLE__
@@ -223,7 +226,6 @@ void event_loop()
 #endif
 
                 int bytes_in = recv(sock, buffer, BUFFER_LEN, 0);
-                //                assert(bytes_in > 0);
                 std::lock_guard<std::mutex> lg(*(controller.server.cli_mtx));
                 /* we should update client's last interaction in time */
                 if (controller.server.clients.count(sock)) {
@@ -232,6 +234,7 @@ void event_loop()
                 /* the client might be deleted by timeout or something bad happened
                  * so we close them. */
                 if (controller.server.clients.count(sock) <= 0 || bytes_in <= 0) {
+
 #ifdef _WIN32
                     closesocket(sock);
                     FD_CLR(sock, &master);
@@ -241,20 +244,27 @@ void event_loop()
                     EV_SET(&del_event, sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                     kevent(kq, &del_event, 1, NULL, 0, NULL);
 #endif
+                    /* cleanup exited client
+                     * FIXME: migrate this logic to cleaup thread
+                     * */
                     std::stringstream ss;
-                    ss << "Disconnect to client <host>: " << controller.server.clients[sock]->hostname
-                       << " <port>: " << controller.server.clients[sock]->port
-                       << std::endl;
-                    log_warn(ss.str());
-                    save_data(&controller.server);
+                    if (controller.server.clients.count(sock)) {
+                        ss << "client exited, <host>: " << controller.server.clients[sock]->hostname
+                           << " <port>: " << controller.server.clients[sock]->port;
+                        log_warn(ss.str());
+                    } else {
+                        ss << "client [" << sock << "] exited";
+                        log_warn(ss.str());
+                    }
                     controller.server.clients.erase(sock);
                 } else {
-                    std::cout << "from client [" << sock << "] received command: " << buffer << std::endl;
+                    std::stringstream ss;
+                    ss << "from client [" << sock << "]: " << buffer;
+                    log_system(ss.str());
                     /* change current client */
                     controller.client = controller.server.clients[sock];
                     auto res = controller.run(std::string(buffer));
-                    std::cout << "result after executing:\n"
-                              << res << std::endl;
+                    log_system(res);
                     send(sock, res.c_str(), res.size(), 0);
                 }
             }
@@ -266,30 +276,41 @@ void event_loop()
 #endif
 }
 
+/**
+ * print the LOGO: ERSERVER in fancy way
+ *
+ * - In macOS, we will use Green color to print the logo,
+ * which is not support in windows powershell.
+ *
+ * - same situation happens in log_*() functions
+ *
+ */
 void logo()
 {
     std::cout << "\n";
-#ifdef __APPLE__
+//#ifdef __APPLE__ || _WIN32
     std::cout << "\x1b[36m";
-#endif
+//#endif
     for (auto iter : LOGO) {
         std::cout << iter;
     }
-#ifdef __APPLE__
+//#ifdef __APPLE__ || _WIN32
     std::cout << "\x1b[0m";
-#endif
+//#endif
     std::cout << "\n";
     std::cout << "<host>: 127.0.0.1\n"
               << "<port>: " << SERVER_PORT
               << std::endl;
 }
 
+// before exit by error signal,
+// we must save data to make sure that data consistency
 void signal_handler(int signum)
 {
-    log_warn("System Exit...\n");
-    log_warn("Saving data...\n");
+    log_warn("System Exit...");
+    log_warn("Saving data...");
     save_data(&controller.server);
-    log_warn("Bye\n");
+    log_warn("Bye");
     exit(signum);
 }
 

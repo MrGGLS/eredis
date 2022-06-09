@@ -73,7 +73,6 @@ std::string Controller::run(std::string input)
         std::string key = parser_res->getKey();
         int32_t start = parser_res->getStart();
         int32_t end = parser_res->getAnEnd();
-        std::cout << "key: " << key << std::endl;
         return set_json(server.getrange(client->db_id, key, start, end), SERVER_EXEC_RETURN, NULL);
     }
     case Parser_Token::incr_key_op: {
@@ -162,7 +161,7 @@ std::string Controller::run(std::string input)
         return set_json("syntax error", SERVER_SYNTAX_ERR, NULL);
     }
     case Parser_Token::arguments_error: {
-        return set_json("ERR wrong number of arguments", SERVER_SYNTAX_ERR, NULL);
+        return set_json("wrong number of arguments", SERVER_SYNTAX_ERR, NULL);
     }
     case Parser_Token::no_vaild_error: {
         return set_json("Invalid argument(s)", SERVER_SYNTAX_ERR, NULL);
@@ -181,6 +180,7 @@ Controller::Controller()
 {
     load_data(&server);
 }
+
 std::string Controller::set_json(std::string msg, int type, int *value)
 {
     nlohmann::json j;

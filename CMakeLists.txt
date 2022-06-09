@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     link_libraries(ws2_32 wsock32)
     add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+    set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 endif ()
 # target
 ADD_EXECUTABLE(easy-redis

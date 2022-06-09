@@ -2,6 +2,8 @@
 // Created by Mr.GGLS on 2022/5/17.
 //
 #include "eredis.hpp"
+#include "utils.hpp"
+#include <unistd.h>
 ERedisDb::ERedisDb(int id)
     : id(id)
 {
@@ -37,11 +39,11 @@ std::string ERedisServer::get_all_keys(int db_id)
 {
     std::string keys = "";
     ERedisDb *edb = this->db[db_id];
-    std::vector<std::string> should_del_keys= get_all_expire_keys(db_id);
-    for(auto del_k:should_del_keys){
-        del_key(db_id,del_k);
+    std::vector<std::string> should_del_keys = get_all_expire_keys(db_id);
+    for (auto del_k : should_del_keys) {
+        del_key(db_id, del_k);
     }
-    std::lock_guard<std::mutex>lg(*key_mtx);
+    std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.size() < 1)
         keys = "(empty array)";
     else {
@@ -112,9 +114,9 @@ std::string ERedisServer::del_key(int db_id, std::string key)
 std::string ERedisServer::get_dbsize(int db_id)
 {
     ERedisDb *edb = this->db[db_id];
-    std::vector<std::string> should_del_keys= get_all_expire_keys(db_id);
-    for(auto del_k:should_del_keys){
-        del_key(db_id,del_k);
+    std::vector<std::string> should_del_keys = get_all_expire_keys(db_id);
+    for (auto del_k : should_del_keys) {
+        del_key(db_id, del_k);
     }
     return std::to_string(edb->dict.size());
 }
@@ -137,7 +139,7 @@ std::string ERedisServer::flushall()
 
 std::string ERedisServer::select_db(int db_id, int client_id)
 {
-    if(db_id>=db_num||db_id<0)
+    if (db_id >= db_num || db_id < 0)
         return REDIS_FAIL;
     ERedisClient *client = (this->clients[client_id]);
     client->db_id = db_id;
@@ -148,7 +150,7 @@ std::string ERedisServer::set_key(int db_id, std::string key, ERObject erObject)
 {
     ERedisDb *edb = this->db[db_id];
     std::lock_guard<std::mutex> lg(*key_mtx);
-    if(edb->dict.count(key)>0){
+    if (edb->dict.count(key) > 0) {
         return REDIS_FAIL;
     }
     edb->dict[key] = erObject;
@@ -170,7 +172,7 @@ std::string ERedisServer::get_key(int db_id, std::string key)
             return std::to_string(edb->dict[key].get_double());
         }
         case ObjectType::EREDIS_STRING: {
-            return edb->dict[key].get_str();
+            return "\"" + edb->dict[key].get_str() + "\"";
         }
         default:
             break;
@@ -219,15 +221,15 @@ std::string ERedisServer::append_value(int db_id, std::string key, std::string s
 /* the interval includes start and end! */
 std::string ERedisServer::getrange(int db_id, std::string key, int32_t start, int32_t end)
 {
-    if(start<0||end< -1)
+    if (start < 0 || end < -1)
         return REDIS_FAIL;
     ERedisDb *edb = this->db[db_id];
     if (edb->expires.count(key) && edb->expires[key] < time(0))
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) && (edb->dict[key].get_type() == ObjectType::EREDIS_STRING)) {
-        if(end==-1)
-            end=edb->dict[key].get_str().length();
+        if (end == -1)
+            end = edb->dict[key].get_str().length();
         return edb->dict[key].get_str().substr(start, end - start + 1);
     }
     return REDIS_FAIL;
@@ -274,6 +276,8 @@ std::string ERedisServer::lpush(int db_id, std::string key, ERObject erObject)
     }
     if (edb->dict.count(key) > 0) {
         auto tmp = erObject.get_list();
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         std::vector<std::string> new_list = edb->dict[key].get_list();
         for (int i = 0; i < tmp.size(); i++) {
             new_list.insert(new_list.begin(), tmp[i]);
@@ -293,11 +297,13 @@ std::string ERedisServer::rpush(int db_id, std::string key, ERObject erObject)
     if (edb->expires.count(key) && edb->expires[key] < time(0))
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
-    if (erObject.get_type() != ObjectType::EREDIS_LIST){
+    if (erObject.get_type() != ObjectType::EREDIS_LIST) {
         return REDIS_FAIL;
     }
     if (edb->dict.count(key) > 0) {
         auto tmp = erObject.get_list();
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         auto new_list = edb->dict[key].get_list();
         new_list.insert(new_list.end(), tmp.begin(), tmp.end());
         edb->dict[key].set_list(new_list);
@@ -317,6 +323,8 @@ std::string ERedisServer::lrange(int db_id, std::string key, int start, int end)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key)) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         auto list = edb->dict[key].get_list();
         if (list.size() <= start)
             return "(empty)";
@@ -325,9 +333,9 @@ std::string ERedisServer::lrange(int db_id, std::string key, int start, int end)
         std::string res = "";
         end = end > list.size() ? list.size() : end;
         for (int i = start; i < end; i++) {
-            res += std::to_string(i) + ")" + list[i] + "\r\n";
+            res += std::to_string(i) + ")" + "\"" + list[i] + "\""+ "\r\n";
         }
-        return res==""?"(empty)":res;
+        return res == "" ? "(empty)" : res;
     }
     return REDIS_FAIL;
 }
@@ -339,6 +347,9 @@ std::string ERedisServer::lpop(int db_id, std::string key)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
+
         if (edb->dict[key].get_list().empty()) {
             edb->dict.erase(key);
         } else {
@@ -359,6 +370,9 @@ std::string ERedisServer::rpop(int db_id, std::string key)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
+
         if (edb->dict[key].get_list().empty()) {
             edb->dict.erase(key);
         } else {
@@ -379,11 +393,13 @@ std::string ERedisServer::lindex(int db_id, std::string key, int index)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         auto list = edb->dict[key].get_list();
         if (list.size() <= index) {
             return REDIS_FAIL;
         } else {
-            return list[index];
+            return "\"" + list[index] + "\"";
         }
     }
     return REDIS_FAIL;
@@ -396,6 +412,8 @@ std::string ERedisServer::llen(int db_id, std::string key)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         return std::to_string(edb->dict[key].get_list().size());
     }
     return REDIS_FAIL;
@@ -408,6 +426,8 @@ std::string ERedisServer::lset(int db_id, std::string key, int index, std::strin
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key) > 0) {
+        if (!edb->dict[key].is_list())
+            return REDIS_FAIL;
         auto list = edb->dict[key].get_list();
         if (list.size() <= index) {
             return REDIS_FAIL;
@@ -428,8 +448,7 @@ std::string ERedisServer::set_expire(int db_id, std::string key, int secs)
         del_key(db_id, key);
     std::lock_guard<std::mutex> lg(*key_mtx);
     if (edb->dict.count(key)) {
-        edb->expires[key]=time(0)+secs;
-//        edb->expires.insert({ key, time(0) + secs });
+        edb->expires[key] = time(0) + secs;
         return REDIS_OK;
     }
     return REDIS_FAIL;
@@ -454,7 +473,7 @@ std::string ERedisServer::setex(int db_id, std::string key, int secs, ERObject e
 {
     ERedisDb *edb = this->db[db_id];
     std::lock_guard<std::mutex> lg(*key_mtx);
-    if(edb->dict.count(key)>0){
+    if (edb->dict.count(key) > 0) {
         return REDIS_FAIL;
     }
     edb->dict.insert({ key, erObject });
@@ -474,6 +493,7 @@ std::vector<std::string> ERedisServer::get_all_expire_keys(int db_id)
     }
     return should_del_keys;
 }
+
 std::vector<int> ERedisServer::get_all_idle_clients()
 {
     std::vector<int> should_del_clients;
@@ -492,10 +512,10 @@ std::vector<int> ERedisServer::get_all_idle_clients()
         for (const auto &edb : server->db) {
             std::vector<std::string> should_del_keys = server->get_all_expire_keys(edb->id);
             /* for data safety consideration, we don't directly use del_key function here */
-//            std::lock_guard<std::mutex> lg(*(server->key_mtx));
-            if(server->key_mtx->try_lock()){
-                for(auto del_k:should_del_keys){
+            if (server->key_mtx->try_lock()) {
+                for (auto del_k : should_del_keys) {
                     if (edb->dict.count(del_k)) {
+                        log_warn("clear expired key: " + del_k);
                         edb->dict.erase(del_k);
                         edb->expires.erase(del_k);
                     }
@@ -504,8 +524,6 @@ std::vector<int> ERedisServer::get_all_idle_clients()
             }
             server->key_mtx->unlock();
         }
-        //        std::cout<<"hehe................."<<std::endl;
-        //        std::this_thread::sleep_for(std::chrono::milliseconds (100));
         std::this_thread::sleep_for(std::chrono::milliseconds(EREDIS_DEFAULT_DEL_INTERVAL));
     }
 }
@@ -513,17 +531,17 @@ std::vector<int> ERedisServer::get_all_idle_clients()
 [[noreturn]] void clear_idle_clients(ERedisServer *server)
 {
     while (true) {
-        std::vector<int> should_del_clients=server->get_all_idle_clients();
+        std::vector<int> should_del_clients = server->get_all_idle_clients();
         /* For saving our resources for serving more clients, we will clear those
          * who are idle for max timeout interval... */
-//        std::lock_guard<std::mutex> lg(*(server->cli_mtx));
-        if(server->cli_mtx->try_lock()){
-            for(auto idle_cli:should_del_clients){
+        //        std::lock_guard<std::mutex> lg(*(server->cli_mtx));
+        if (server->cli_mtx->try_lock()) {
+            for (auto idle_cli : should_del_clients) {
                 server->clients.erase(idle_cli);
             }
         }
         server->cli_mtx->unlock();
-//        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        //        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         std::this_thread::sleep_for(std::chrono::milliseconds(EREDIS_DEFAULT_DEL_CLIENT_INTERVAL));
     }
 }

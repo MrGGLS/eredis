@@ -9,7 +9,7 @@
 #include <iostream>
 /* meta data */
 #define DBNAME "EREDIS" /* 6 bytes for db name */
-#define EREDIS_VERSION "0001" /* four bytes for db version representation */
+#define ERDB_VERSION "0001" /* four bytes for db version representation */
 #define DBNAME_LEN 6
 #define VERSION_LEN 4
 /* file name */

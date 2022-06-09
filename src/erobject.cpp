@@ -80,10 +80,12 @@ void ERObject::set_list(std::vector<std::string> list)
     assert(type == ObjectType::EREDIS_LIST);
     this->value = ERList { list };
 }
+
 bool ERObject::is_int()
 {
     return type == ObjectType::EREDIS_INT;
 }
+
 bool ERObject::is_double()
 {
     return type == ObjectType::EREDIS_DOUBLE;

@@ -4,7 +4,10 @@
 #include "Parser.h"
 #include <unordered_map>
 #include <sstream>
-#define doule_e_support 0
+#include <algorithm>
+const int doule_e_support=0;
+const int quo_to_str_sup=0;
+
 /*
  * 目前存在未判定整数长度和浮点数长度是否合格bug
  * */
@@ -412,21 +415,31 @@ std::unique_ptr<op_result> Parser::decr_key_op() {
 }
 
 std::unique_ptr<op_result> Parser::lpush_key_op() {
+    if (split_result.size()>2){
         auto start = split_result.begin() + 2;
         auto end = split_result.end();
         std::vector<std::string> list_value;
         list_value.assign(start, end);
         std::unique_ptr<lpush_result> res = std::make_unique<lpush_result>(Parser_Token::lpush_key_list_op, "", split_result[1], ERObject(ObjectType::EREDIS_LIST, (void *)&list_value));
         return res;
+    }else {
+        return std::make_unique<op_result>(Parser_Token::arguments_error,"");
+    }
+
 }
 
 std::unique_ptr<op_result> Parser::rpush_key_op() {
-    auto start = split_result.begin() + 2;
-    auto end = split_result.end();
-    std::vector<std::string> list_value;
-    list_value.assign(start, end);
-    std::unique_ptr<rpush_result> res = std::make_unique<rpush_result>(Parser_Token::rpush_key_list_op, "", split_result[1], ERObject(ObjectType::EREDIS_LIST, (void *)&list_value));
-    return res;
+    if(split_result.size()>2){
+        auto start = split_result.begin() + 2;
+        auto end = split_result.end();
+        std::vector<std::string> list_value;
+        list_value.assign(start, end);
+        std::unique_ptr<rpush_result> res = std::make_unique<rpush_result>(Parser_Token::rpush_key_list_op, "", split_result[1], ERObject(ObjectType::EREDIS_LIST, (void *)&list_value));
+        return res;
+    } else{
+        return std::make_unique<op_result>(Parser_Token::arguments_error,"");
+    }
+
 }
 
 std::unique_ptr<op_result> Parser::lrange_key_op() {
@@ -1264,7 +1277,8 @@ Parser_Token Parser::split()
             }
         }
     }
-
+//转换大小写
+    transform(split_result[0].begin(),split_result[0].end(),split_result[0].begin(),::tolower);
     //    if (split_result[0] == "keys") {
     //        return Parser_Token::key_list_op;
     //    } else if (split_result[0] == "exists") {
