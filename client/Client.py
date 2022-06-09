@@ -6,7 +6,7 @@ from prompt_toolkit.completion import WordCompleter
 
 
 def helpkeyFunction():
-    print('         \033[1;31m\"key *\"\033[0m'+' for all keys in databases')
+    print('         \033[1;31m\"keys *\"\033[0m'+' for all keys in databases')
     print('         \033[1;31m\"exists [key]\"\033[0m' + ' for check if key exists')
     print('         \033[1;31m\"del [key]\"\033[0m' + ' for delete the key')
     print('         \033[1;31m\"type [key]\"\033[0m' + ' for type of the key')
